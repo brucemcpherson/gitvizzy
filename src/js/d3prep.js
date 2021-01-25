@@ -24,7 +24,7 @@ const makeChildren = ({ map, matchId, id, state, filter, type }) => {
   return children;
 };
 
-const makeManifestChildren = ({ mf, id, state }) => {
+const makeManifestChildren = ({ mf, id, state, repoName }) => {
   const manifest = mf.manifests.get(id);
   const m = [
     {
@@ -99,7 +99,8 @@ const makeManifestChildren = ({ mf, id, state }) => {
         entry: g,
         list,
         type: "entries",
-        manifestType: f
+        manifestType: f,
+        repoName,
       };
     });
 
@@ -118,6 +119,7 @@ const makeManifestChildren = ({ mf, id, state }) => {
       children,
       target,
       type: f,
+      repoName,
     };
 
     return pack;
@@ -205,6 +207,7 @@ export const makeOwnerTreeData = (state) => {
           type: "repos",
         }).map((f) => {
           return {
+            repoName: f.fields.name,
             repo: f,
             name: f.fields.name,
             type: f.type,
@@ -216,17 +219,20 @@ export const makeOwnerTreeData = (state) => {
               type: "files",
             })
               .map((g) => {
-                const manifest = mf.manifests.get(g.fields.id);
-                const { path: fp } = manifest.file.fields;
+                const manifest = mf.manifests.get(g.fields.sha);
+                const { path: fp } = g.fields;
                 return {
+                  repoName: f.fields.name,
                   name: fp,
                   manifest,
                   type: g.type,
+                  file: g,
                   // the children are each of the manifest options
                   children: makeManifestChildren({
                     mf,
-                    id: g.fields.id,
+                    id: g.fields.sha,
                     state,
+                    repoName: f.fields.name,
                   }),
                 };
               })
@@ -238,7 +244,7 @@ export const makeOwnerTreeData = (state) => {
       p.children.push(owner);
       return p;
     },
-    { name: "owners", children: [] , type: "root"}
+    { name: "owners", children: [], type: "root" }
   );
 
   // rid of the branches with nothing to show
@@ -250,15 +256,21 @@ export const makeOwnerTreeData = (state) => {
   // now trim top level
   t.children = t.children.filter((f) => f.children.length);
 
-  // if we're not showing any detail, then we can drop everything below repo level
+  // if we're not showing any detail, then we can drop everything below file level
   if (!state.showDetail) {
+    // owners
     t.children = t.children.map((o) => {
-      o.children = o.children.map((z) => {
-        // remember for viz whats been suppressed
-        z.childrenCount = z.children.length;
-        z.childrenType = z.children[0].type;
-        z.children = [];
-        return z;
+      // repos
+      o.children = o.children.map((r) => {
+        //files
+        r.children = r.children.map((z) => {
+          // remember for viz whats been suppressed
+          z.childrenCount = z.children.length;
+          z.childrenType = z.children[0].type;
+          z.children = [];
+          return z;
+        });
+        return r;
       });
       return o;
     });
@@ -273,4 +285,14 @@ export const tree = ({ data, width }) => {
   root.dx = 10;
   root.dy = width / (root.height + 1);
   return d3.tree().nodeSize([root.dx, root.dy])(root);
+};
+export const mapVersions = (ot) => {
+  return (ot || []).map((f) => ({
+    library: f,
+    name: f.label,
+    id: f.id,
+    versionNames: `versions:${Array.from(f.versions.values())
+      .map((g) => g.version)
+      .join(",") || f.label}`,
+  }));
 };

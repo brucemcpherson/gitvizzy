@@ -1,9 +1,9 @@
 const GasManifest = require('./GasManifest')
 
 class GasManifests {
-  constructor({ files }) {
+  constructor({ shaxs }) {
     this.manifests =  new Map(
-      Array.from(files, ([key, file]) => [key, new GasManifest(file)])
+      Array.from(shaxs, ([key, shax]) => [key, new GasManifest(shax)])
     );
     this._maps = null
   }

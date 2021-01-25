@@ -5,30 +5,38 @@ export const delay = require("delay");
 
 // preferably get from redis
 const getFromCache = async () => {
-
   return cacheGet().then((result) => {
-    
     const { value, timestamp } = result || {};
     if (value) {
       console.log(
-        `Using cached data from ${
-          (new Date().getTime() - timestamp) / 60 / 1000 / 60
-        } hours ago`
+        `Using cached data from ${(new Date().getTime() - timestamp) /
+          60 /
+          1000 /
+          60} hours ago`
       );
       return {
         gd: new GitData(value),
-        timestamp
-      }
-    } 
+        timestamp,
+      };
+    }
   });
 };
 
-export const gasVizzyInit = () => { 
- 
-  return getFromCache()
-    .then(({ gd, timestamp }) => ({
+export const gasVizzyInit = () => {
+  return getFromCache().then(({ gd, timestamp }) => {
+    const mf = enumerateManifests(gd);
+
+    // for convenience we'll put a pointer to the content in the files section
+    gd.files.forEach(f => { 
+      // get the matching shax
+      const shax = gd.shaxs.get(f.fields.sha)
+      // add a pointer to the shared content
+      f.fields.content = shax.fields.content
+    })
+    return {
       gd,
-      mf: enumerateManifests(gd),
-      timestamp
-    }));
-}
+      mf,
+      timestamp,
+    };
+  });
+};

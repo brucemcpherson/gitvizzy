@@ -1,6 +1,5 @@
 <template>
   <v-autocomplete
-
     v-model="addOnList"
     :items="items"
     chips
@@ -14,6 +13,8 @@
     item-text="name"
     item-value="id"
     clearable
+    hide-selected
+    :menu-props="{ closeOnClick: true }"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -45,7 +46,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-
+import {getAddOns} from '@/js/d3prep'
 export default {
   name: "add-on-filter",
   methods: {
@@ -56,7 +57,13 @@ export default {
   },
   computed: {
     items() {
-      return this.selectAddOns;
+      const ot = getAddOns(this.mf);
+      return (ot || []).map((f) => ({
+        addOn: f,
+        name: f.label,
+        id: f.id,
+        versionNames: `${f.label} addOns`,
+      }));
     },
     addOnList: {
       get() {
@@ -66,7 +73,6 @@ export default {
         this.setAddOnFilter(value);
       },
     },
-    ...maps.getters,
     ...maps.state,
   },
 };

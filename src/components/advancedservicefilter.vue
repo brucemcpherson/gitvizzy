@@ -1,6 +1,5 @@
 <template>
   <v-autocomplete
-
     v-model="advancedServiceList"
     :items="items"
     chips
@@ -14,6 +13,8 @@
     item-text="name"
     item-value="id"
     clearable
+    hide-selected
+    :menu-props="{ closeOnClick: true }"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -45,7 +46,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-
+import {getAdvancedServices, mapVersions} from '@/js/d3prep'
 export default {
   name: "advanced-service-filter",
   methods: {
@@ -58,7 +59,7 @@ export default {
   },
   computed: {
     items() {
-      return this.selectAdvancedServices;
+      return mapVersions(getAdvancedServices(this.mf));
     },
     advancedServiceList: {
       get() {
@@ -68,7 +69,6 @@ export default {
         this.setAdvancedServiceFilter(value);
       },
     },
-    ...maps.getters,
     ...maps.state,
   },
 };

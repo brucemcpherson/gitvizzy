@@ -14,6 +14,8 @@
     item-text="name"
     item-value="id"
     clearable
+        hide-selected
+    :menu-props="{closeOnClick: true}"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -45,7 +47,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-
+import {getTimeZones, mapVersions} from '@/js/d3prep'
 export default {
   name: "time-zone-filter",
   methods: {
@@ -56,7 +58,7 @@ export default {
   },
   computed: {
     items() {
-      return this.selectTimeZones;
+      return mapVersions(getTimeZones(this.mf));
     },
     timeZoneList: {
       get() {
@@ -66,7 +68,6 @@ export default {
         this.setTimeZoneFilter(value);
       },
     },
-    ...maps.getters,
     ...maps.state,
   },
 };

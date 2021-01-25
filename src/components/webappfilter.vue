@@ -1,6 +1,5 @@
 <template>
   <v-autocomplete
-   
     v-model="webappList"
     :items="items"
     chips
@@ -14,6 +13,8 @@
     item-text="name"
     item-value="id"
     clearable
+    hide-selected
+    :menu-props="{ closeOnClick: true }"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -45,7 +46,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-
+import {getWebapps, mapVersions} from '@/js/d3prep'
 export default {
   name: "webapp-filter",
   methods: {
@@ -56,7 +57,7 @@ export default {
   },
   computed: {
     items() {
-      return this.selectWebapps;
+      return mapVersions(getWebapps(this.mf));
     },
     webappList: {
       get() {
@@ -66,7 +67,6 @@ export default {
         this.setWebappFilter(value);
       },
     },
-    ...maps.getters,
     ...maps.state,
   },
 };

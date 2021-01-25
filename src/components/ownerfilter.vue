@@ -13,6 +13,8 @@
     item-text="name"
     item-value="id"
     clearable
+    hide-selected
+    :menu-props="{closeOnClick: true}"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -48,7 +50,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-
+import {getOwners} from '@/js/d3prep'
 export default {
   name: "owner-filter",
 
@@ -59,8 +61,9 @@ export default {
     ...maps.actions,
   },
   computed: {
-    items() {
-      return this.selectOwners;
+    items ()  {
+      const ot = getOwners({ gd: this.gd });
+      return (ot || []).map((f) => f.fields);
     },
     ownerList: {
       get() {
@@ -70,7 +73,6 @@ export default {
         this.setOwnerFilter(value);
       },
     },
-    ...maps.getters,
     ...maps.state,
   },
 };

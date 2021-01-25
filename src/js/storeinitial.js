@@ -2,29 +2,8 @@ import { gasVizzyInit, delay } from "./gasvizzy";
 
 import {
   tree,
-  makeOwnerTreeData,
-  getOwners,
-  getLibraries,
-  getAdvancedServices,
-  getOauthScopes,
-  getAddOns,
-  getRuntimeVersions,
-  getWebapps,
-  getTimeZones,
-  getRepos,
-  getDataStudios,
+  makeOwnerTreeData
 } from "./d3prep";
-
-const mapVersions = (ot) => {
-  return (ot || []).map((f) => ({
-    library: f,
-    name: f.label,
-    id: f.id,
-    versionNames: `versions:${Array.from(f.versions.values())
-      .map((g) => g.version)
-      .join(",") || f.label}`,
-  }));
-};
 
 const _initial = {
   state: {
@@ -47,7 +26,6 @@ const _initial = {
     cacheTimestamp: null,
     making: false,
     showDetail: false,
-    vizInfo: true,
     infoData: null,
     infoMoused: false,
     colors: {
@@ -57,63 +35,12 @@ const _initial = {
       info: "pink",
     },
   },
-  getters: {
-    showVizInfo(state) {
-      return Boolean(state.vizInfo && state.infoData && state.infoMoused);
-    },
-    selectOwners(state) {
-      const ot = getOwners({ gd: state.gd });
-      return (ot || []).map((f) => f.fields);
-    },
-
-    selectRepos(state) {
-      const ot = getRepos({ gd: state.gd });
-      return (ot || []).map((f) => f.fields);
-    },
-    selectLibraries(state) {
-      return mapVersions(getLibraries(state.mf));
-    },
-
-    selectAdvancedServices(state) {
-      return mapVersions(getAdvancedServices(state.mf));
-    },
-
-    selectRuntimeVersions(state) {
-      return mapVersions(getRuntimeVersions(state.mf));
-    },
-    selectWebapps(state) {
-      return mapVersions(getWebapps(state.mf));
-    },
-    selectDataStudios(state) {
-      return mapVersions(getDataStudios(state.mf));
-    },
-    selectTimeZones(state) {
-      return mapVersions(getTimeZones(state.mf));
-    },
-    selectOauthScopes(state) {
-      const ot = getOauthScopes(state.mf);
-      return (ot || []).map((f) => ({
-        oauthScope: f,
-        name: f.label.replace("https://www.googleapis.com/auth/", ""),
-        id: f.id,
-        versionNames: f.label,
-      }));
-    },
-
-    selectAddOns(state) {
-      const ot = getAddOns(state.mf);
-
-      return (ot || []).map((f) => ({
-        addOn: f,
-        name: f.label,
-        id: f.id,
-        versionNames: `${f.label} addOns`,
-      }));
-    },
-  },
   mutations: {
     setInfoMoused(state, value) {
       state.infoMoused = value;
+    },
+    clearRoot(state) { 
+      state.root = null;
     },
     setRoot(state) {
       const data = makeOwnerTreeData(state);
@@ -134,11 +61,44 @@ const _initial = {
     setCacheTimestamp(state, value) {
       state.cacheTimestamp = value;
     },
-    setVizInfo(state, value) {
-      state.vizInfo = value;
-    },
     setInfoData(state, value) {
       state.infoData = value;
+    },
+    _ownerFilter(state, value) {
+      state.ownerFilter = value;
+    },
+    _repoFilter(state, value) {
+      state.repoFilter = value;
+    },
+    _timeZoneFilter(state, value) {
+      state.timeZoneFilter = value;
+    },
+    _webappFilter(state, value) {
+      state.webappFilter = value;
+    },
+    _dataStudioFilter(state, value) {
+      state.dataStudioFilter = value;
+    },
+    _addOnFilter(state, value) {
+      state.addOnFilter = value;
+    },
+    _oauthScopeFilter(state, value) {
+      state.oauthScopeFilter = value;
+    },
+    _advancedServiceFilter(state, value) {
+      state.advancedServiceFilter = value;
+    },
+    _libraryFilter(state, value) {
+      state.libraryFilter = value;
+    },
+    _runtimeVersionFilter(state, value) {
+      state.runtimeVersionFilter = value;
+    },
+    _showDetail(state, value) {
+      state.showDetail = value;
+    },
+    _filterPlus(state, value) {
+      state.filterPlus = value;
     },
   },
   actions: {
@@ -151,58 +111,61 @@ const _initial = {
         dispatch("updateRoot");
       });
     },
-    setOwnerFilter({ state, dispatch }, value) {
-      state.ownerFilter = value;
+    setOwnerFilter({ dispatch, commit }, value) {
+      commit("_ownerFilter", value);
       dispatch("updateRoot");
     },
-    setRepoFilter({ dispatch, state }, value) {
-      state.repoFilter = value;
+    setRepoFilter({ dispatch, commit }, value) {
+      commit("_repoFilter", value);
       dispatch("updateRoot");
     },
-    setTimeZoneFilter({ dispatch, state }, value) {
-      state.timeZoneFilter = value;
+    setTimeZoneFilter({ dispatch, commit }, value) {
+      commit("_timeZoneFilter", value);
       dispatch("updateRoot");
     },
-    setWebappFilter({ dispatch, state }, value) {
-      state.webappFilter = value;
+    setWebappFilter({ dispatch, commit }, value) {
+      commit("_webappFilter", value);
       dispatch("updateRoot");
     },
-    setDataStudioFilter({ dispatch, state }, value) {
-      state.dataStudioFilter = value;
+    setDataStudioFilter({ dispatch, commit }, value) {
+      commit("_dataStudioFilter", value);
       dispatch("updateRoot");
     },
-    setAddOnFilter({ dispatch, state }, value) {
-      state.addOnFilter = value;
+    setAddOnFilter({ dispatch, commit }, value) {
+      commit("_addOnFilter", value);
       dispatch("updateRoot");
     },
-    setOauthScopeFilter({ dispatch, state }, value) {
-      state.oauthScopeFilter = value;
+    setOauthScopeFilter({ dispatch, commit }, value) {
+      commit("_oauthScopeFilter", value);
       dispatch("updateRoot");
     },
-    setAdvancedServiceFilter({ dispatch, state }, value) {
-      state.advancedServiceFilter = value;
+    setAdvancedServiceFilter({ dispatch, commit }, value) {
+      commit("_advancedServiceFilter", value);
       dispatch("updateRoot");
     },
-    setLibraryFilter({ dispatch, state }, value) {
-      state.libraryFilter = value;
+    setLibraryFilter({ dispatch, commit }, value) {
+      commit("_libraryFilter", value);
       dispatch("updateRoot");
     },
-    setRuntimeVersionFilter({ dispatch, state }, value) {
-      state.runtimeVersionFilter = value;
+    setRuntimeVersionFilter({ dispatch, commit }, value) {
+      commit("_runtimeVersionFilter", value);
       dispatch("updateRoot");
     },
 
-    flipShowDetail({ state, dispatch }) {
-      state.showDetail = !state.showDetail;
+    flipShowDetail({ state, dispatch, commit }) {
+      commit("_showDetail", !state.showDetail);
       dispatch("updateRoot");
     },
-    flipFilterPlus({ dispatch, state }) {
-      state.filterPlus = !state.filterPlus;
+    flipFilterPlus({ dispatch, state, commit }) {
+      commit("_filterPlus", !state.filterPlus);
       dispatch("updateRoot");
     },
-    updateRoot({ commit }) {
+    updateRoot({ commit }, force) {
       // this allows re-render of whatever to show before waiting
       // for the length dom update
+      if (force) { 
+        commit("clearRoot")
+      }
       commit("setMaking", true);
       commit("setInfoMoused", false);
       return delay(1).then(() => {

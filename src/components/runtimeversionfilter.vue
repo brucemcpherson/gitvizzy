@@ -14,6 +14,8 @@
     item-text="name"
     item-value="id"
     clearable
+        hide-selected
+    :menu-props="{closeOnClick: true}"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -45,7 +47,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-
+import {getRuntimeVersions, mapVersions} from '@/js/d3prep'
 export default {
   name: "runtime-version-filter",
   methods: {
@@ -58,7 +60,7 @@ export default {
   },
   computed: {
     items() {
-      return this.selectRuntimeVersions;
+      return mapVersions(getRuntimeVersions(this.mf));
     },
     runtimeVersionList: {
       get() {
@@ -68,7 +70,6 @@ export default {
         this.setRuntimeVersionFilter(value);
       },
     },
-    ...maps.getters,
     ...maps.state,
   },
 };

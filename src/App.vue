@@ -14,7 +14,7 @@
       </v-chip>
 
       <v-spacer></v-spacer>
-      <icons name="refresh" @clicked="updateRoot" tip="refresh viz" />
+      <icons name="refresh" @clicked="refresh" tip="refresh viz" />
       <icons
         :name="vizInfoIcon"
         @clicked="setVizInfo(!vizInfo)"
@@ -140,6 +140,9 @@ export default {
   methods: {
     flipSidebar() {
       this.sidebarMenu = !this.sidebarMenu;
+    },
+    refresh () {
+      this.updateRoot(true)
     },
     ...maps.actions,
     ...maps.mutations,

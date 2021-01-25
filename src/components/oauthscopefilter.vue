@@ -1,6 +1,5 @@
 <template>
   <v-autocomplete
-   
     v-model="oauthScopeList"
     :items="items"
     chips
@@ -14,6 +13,8 @@
     item-text="name"
     item-value="id"
     clearable
+    hide-selected
+    :menu-props="{ closeOnClick: true }"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -45,7 +46,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-
+import {getOauthScopes} from '@/js/d3prep'
 export default {
   name: "oauth-scope-filter",
   methods: {
@@ -56,8 +57,15 @@ export default {
   },
   computed: {
     items() {
-      return this.selectOauthScopes;
+      const ot = getOauthScopes(this.mf);
+      return (ot || []).map((f) => ({
+        oauthScope: f,
+        name: f.label.replace("https://www.googleapis.com/auth/", "").replace("https://www.google.com/",""),
+        id: f.id,
+        versionNames: f.label,
+      }));
     },
+
     oauthScopeList: {
       get() {
         return this.oauthScopeFilter;
@@ -66,7 +74,6 @@ export default {
         this.setOauthScopeFilter(value);
       },
     },
-    ...maps.getters,
     ...maps.state,
   },
 };

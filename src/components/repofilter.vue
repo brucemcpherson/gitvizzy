@@ -13,7 +13,8 @@
     item-text="name"
     item-value="id"
     clearable
-    :loading="loading"
+    hide-selected
+    :menu-props="{ closeOnClick: true }"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -46,7 +47,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-
+import {getRepos} from '@/js/d3prep'
 export default {
   name: "repo-filter",
 
@@ -62,20 +63,18 @@ export default {
     };
   },
   computed: {
-    items() {
-      return this.selectRepos;
+    items ()  {
+      const ot = getRepos({ gd: this.gd });
+      return (ot || []).map((f) => f.fields);
     },
     repoList: {
       get() {
         return this.repoFilter;
       },
       set(value) {
-        this.loading = true;
         this.setRepoFilter(value);
-        this.loading = false;
       },
     },
-    ...maps.getters,
     ...maps.state,
   },
 };

@@ -2,6 +2,9 @@ import Vue from 'vue'
 import App from './App.vue'
 import vuetify from './plugins/vuetify';
 import store from './js/store';
+import JsonViewer from "vue-json-viewer";
+
+Vue.use(JsonViewer);
 
 import TabVisibility from "@/js/classes/tabvisibility";
 const tabVisibility = new TabVisibility();
@@ -18,4 +21,6 @@ new Vue({
 }).$mount('#app')
 
 // when tab comes in view, its possible a new render is needed
-tabVisibility.onVisible(() => store.dispatch("updateRoot"));
+tabVisibility
+  .onVisible(() => store.dispatch("updateRoot", true))
+  .onHidden(() => store.commit("setInfoMoused", false));

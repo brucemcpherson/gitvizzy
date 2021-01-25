@@ -1,11 +1,10 @@
 <template>
   <v-autocomplete
-  
     v-model="libraryList"
     :items="items"
     chips
     deletable-chips
-    :label="`Libraries (${items && items.length || '-'})`"
+    :label="`Libraries (${(items && items.length) || '-'})`"
     multiple
     small-chips
     dense
@@ -14,6 +13,8 @@
     item-text="name"
     item-value="id"
     clearable
+    hide-selected
+    :menu-props="{ closeOnClick: true }"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -45,7 +46,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-
+import {getLibraries, mapVersions} from '@/js/d3prep'
 export default {
   name: "library-filter",
   methods: {
@@ -56,7 +57,7 @@ export default {
   },
   computed: {
     items() {
-      return this.selectLibraries;
+      return mapVersions(getLibraries(this.mf));
     },
     libraryList: {
       get() {
@@ -66,7 +67,6 @@ export default {
         this.setLibraryFilter(value);
       },
     },
-    ...maps.getters,
     ...maps.state,
   },
 };
