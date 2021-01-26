@@ -17,4 +17,10 @@ https://ramblings.mcpher.com/vizzy-scrviz/searching-github-gas/
 
 ## screen shots
 
+![](2021-01-26-11-26-29.png)
 
+![](2021-01-26-11-28-26.png)
+
+![](2021-01-26-11-29-54.png)
+
+![](2021-01-26-11-30-40.png)

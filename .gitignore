@@ -5,6 +5,7 @@ node_modules
 firebase.json
 .firebase
 
+
 # local env files
 .env.local
 .env.*.local
