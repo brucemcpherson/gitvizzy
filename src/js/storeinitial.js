@@ -28,6 +28,7 @@ const _initial = {
     showDetail: false,
     infoData: null,
     infoMoused: false,
+    vizInfo: true,
     colors: {
       spinner: "amber accent-1",
       bigTree: "red accent-1",
@@ -36,6 +37,9 @@ const _initial = {
     },
   },
   mutations: {
+    flipVizInfo (state) { 
+      state.vizInfo = !state.vizInfo
+    },
     setInfoMoused(state, value) {
       state.infoMoused = value;
     },

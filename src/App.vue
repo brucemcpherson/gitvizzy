@@ -17,7 +17,7 @@
       <icons name="refresh" @clicked="refresh" tip="refresh viz" />
       <icons
         :name="vizInfoIcon"
-        @clicked="setVizInfo(!vizInfo)"
+        @clicked="flipVizInfo()"
         :tip="vizInfoTip"
       />
       <icons :name="filterIcon" @clicked="flipFilterPlus" :tip="filterTip" />

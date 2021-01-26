@@ -197,7 +197,7 @@ export default {
   },
   computed: {
     sv() {
-      return this.infoData && this.infoMoused;
+      return this.vizInfo && this.infoData && this.infoMoused;
     },
     infoChildrenName() {
       if (this.isFile) {
