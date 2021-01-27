@@ -4,7 +4,7 @@ node_modules
 .firebaserc
 firebase.json
 .firebase
-
+secrets
 
 # local env files
 .env.local
