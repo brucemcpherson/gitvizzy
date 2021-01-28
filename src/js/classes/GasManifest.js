@@ -9,7 +9,7 @@ class GasManifest {
     } catch (err) {
       console.log(
         "skipping after failed to parse manifest",
-        this.shax.fields.html_url,
+        this.shax.fields.repoFullName,
         content
       );
       this.manifest = null;

@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <div id="tidy-tree"></div>
+    <div id="tidy-tree" style="width:100%;" v-resize="resize"></div>
     <div v-if="root">
       <div v-if="sv" id="node-info" style="position:absolute">
         <v-card :color="colors.info" dark>
@@ -76,19 +76,19 @@ export default {
   },
 
   mounted() {
+    this.resize();
     this.makeSvg();
 
     this.g = this.svg
       .append("g")
-      .attr("font-family", "sans-serif")
-      .attr("font-size", 10);
+      .attr("font-size", 8);
 
     this.link = this.g
       .append("g")
       .attr("fill", "none")
-      .attr("stroke", "#555")
+      .attr("stroke", "#BDBDBD")
       .attr("stroke-opacity", 0.4)
-      .attr("stroke-width", 1.5);
+      .attr("stroke-width", 1.0);
 
     this.node = this.g
       .append("g")
@@ -96,6 +96,11 @@ export default {
       .attr("stroke-width", 3);
   },
   methods: {
+    resize() {
+      const sel = d3.select("#tidy-tree");
+      const b = sel.node().getBoundingClientRect();
+      this.setWidth(b.width);
+    },
     handleMouseOut() {
       // nothing to do here that works
     },
@@ -105,7 +110,7 @@ export default {
       const svgDim = this.svg.node().getBoundingClientRect();
       const left = e.clientX - svgDim.x;
       const top = e.clientY - svgDim.y;
- 
+
       this.setInfoData(n.data);
       this.$nextTick(() => {
         const s = d3.select("#node-info");
@@ -175,7 +180,7 @@ export default {
           .on("mouseout", this.handleMouseOut)
           .attr("dy", "0.31em")
           .attr("x", (d) => (d.children ? -6 : 6))
-          .attr("text-anchor", (d) => (d.children ? "end" : "start"))
+          .attr("text-anchor", (d) => (d.children  ? "end" : "start"))
           .text((d) => d.data.name)
           .clone(true)
           .lower()
@@ -190,8 +195,8 @@ export default {
         .style("min-width", "160px");
     },
     makeSvg() {
-      this.setWidth(1000);
-      this.svg = d3.select("#tidy-tree").append("svg");
+      const sel = d3.select("#tidy-tree");
+      this.svg = sel.append("svg");
     },
     ...maps.mutations,
   },

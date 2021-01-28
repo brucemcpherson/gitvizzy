@@ -1,6 +1,7 @@
+const decorations = [];
+
 class GitFile {
 
-  static decorations = ["content"];
   constructor(data) {
     if (data.importFields) {
       this.fields = data.importFields;
@@ -21,16 +22,15 @@ class GitFile {
       this.fields.repositoryId = data.repository.id;
       this.fields.ownerId = data.repository.owner.id;
       this.fields.id = this.fields.url;
-      this.fields.repoFullName = data.repository.full_name
+      this.fields.repoFullName = data.repository.full_name;
     }
   }
   decorate(body) {
     if (body) {
-      this.constructor.decorations.forEach((f) => {
+      decorations.forEach((f) => {
         this.fields[f] = body[f];
       });
     }
   }
-
 }
 module.exports = GitFile;

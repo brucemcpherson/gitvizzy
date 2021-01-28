@@ -1,7 +1,10 @@
 {
-  "name": "gasgitvizzy",
-  "version": "1.0.3",
-  "private": true,
+  "name": "gitvizzy",
+  "version": "1.0.4",
+  "private": false,
+  "repository": {
+    "url": "https://github.com/brucemcpherson/gitvizzy"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
