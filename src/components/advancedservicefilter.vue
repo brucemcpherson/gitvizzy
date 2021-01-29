@@ -15,6 +15,8 @@
     clearable
     hide-selected
     :menu-props="{ closeOnClick: true }"
+    :search-input.sync="search"
+    @change="search = ''"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -46,7 +48,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-import {getAdvancedServices, mapVersions} from '@/js/d3prep'
+import { getAdvancedServices, mapVersions } from "@/js/d3prep";
 export default {
   name: "advanced-service-filter",
   methods: {
@@ -56,6 +58,11 @@ export default {
       );
     },
     ...maps.actions,
+  },
+  data: () => {
+    return {
+      search: null,
+    };
   },
   computed: {
     items() {

@@ -8,11 +8,12 @@
         <v-list-item-content>
           <v-list-item-title v-html="fields.name"></v-list-item-title>
           <v-list-item-subtitle>
-            <a :href="fields.html_url" target="_blank">{{fields.full_name}}</a>
+            <a :href="fields.html_url" target="_blank">{{
+              fields.full_name
+            }}</a>
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
-
     </v-list>
   </div>
 </template>
@@ -25,23 +26,22 @@ export default {
   props: {
     fields: Object,
     listColor: String,
-  }
+  },
 };
 </script>
 <style scoped>
-/* unvisited link */
 a:link {
-  color: #F5F5F5;
+  color: #f5f5f5;
 }
 
 a:visited {
-  color: #F5F5F5;
+  color: #f5f5f5;
 }
 
 a:active {
-  color: #F5F5F5;
+  color: #f5f5f5;
 }
 a:link {
-  color: #F5F5F5;
+  color: #f5f5f5;
 }
 </style>

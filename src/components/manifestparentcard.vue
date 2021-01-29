@@ -4,11 +4,25 @@
   </div>
 </template>
 <script>
-
 export default {
   props: {
     manifest: Array,
-  }
+  },
 };
 </script>
+<style scoped>
+a:link {
+  color: #f5f5f5;
+}
 
+a:visited {
+  color: #f5f5f5;
+}
+
+a:active {
+  color: #f5f5f5;
+}
+a:link {
+  color: #f5f5f5;
+}
+</style>

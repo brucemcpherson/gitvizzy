@@ -1,6 +1,5 @@
 <template>
   <v-autocomplete
-  
     v-model="runtimeVersionList"
     :items="items"
     chips
@@ -14,8 +13,10 @@
     item-text="name"
     item-value="id"
     clearable
-        hide-selected
-    :menu-props="{closeOnClick: true}"
+    hide-selected
+    :menu-props="{ closeOnClick: true }"
+    :search-input.sync="search"
+    @change="search = ''"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -47,7 +48,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-import {getRuntimeVersions, mapVersions} from '@/js/d3prep'
+import { getRuntimeVersions, mapVersions } from "@/js/d3prep";
 export default {
   name: "runtime-version-filter",
   methods: {
@@ -57,6 +58,11 @@ export default {
       );
     },
     ...maps.actions,
+  },
+  data: () => {
+    return {
+      search: null,
+    };
   },
   computed: {
     items() {

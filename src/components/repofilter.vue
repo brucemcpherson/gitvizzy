@@ -15,6 +15,8 @@
     clearable
     hide-selected
     :menu-props="{ closeOnClick: true }"
+          :search-input.sync="search"
+      @change="search = ''"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -47,7 +49,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-import {getRepos} from '@/js/d3prep'
+import { getRepos } from "@/js/d3prep";
 export default {
   name: "repo-filter",
 
@@ -63,8 +65,12 @@ export default {
     };
   },
   computed: {
-    items ()  {
-      const ot = getRepos({ gd: this.gd });
+    items() {
+      const ot = getRepos({
+        gd: this.gd,
+        hireableOwners: this.hireableOwners,
+        ownerFilter: this.ownerFilter,
+      });
       return (ot || []).map((f) => f.fields);
     },
     repoList: {

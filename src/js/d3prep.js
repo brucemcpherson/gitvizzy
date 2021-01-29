@@ -158,9 +158,27 @@ export const getGdItem = (state, type, filter) => {
   return items;
 };
 
-export const getOwners = (state) =>
-  getGdItem(state, "owners", state.ownerFilter);
-export const getRepos = (state) => getGdItem(state, "repos", state.repoFilter);
+export const getOwners = (state) => {
+  const owners = getGdItem(state, "owners", state.ownerFilter);
+  // further filter for hireability
+  return !state.hireableOwners || !owners
+    ? owners
+    : owners.filter((f) => f.fields.hireable);
+};
+
+export const getRepos = (state) => {
+  // filter to only contain repos owned by selected owners
+  const repos = getGdItem(state, "repos", state.repoFilter);
+  const owners = getOwners(state);
+
+  if (!repos || !owners) return repos;
+
+  const r = repos.filter((f) =>
+    owners.find((g) => g.fields.id === f.fields.ownerId)
+  );
+
+  return r;
+};
 
 const getDependencies = (mf, type) => {
   if (!mf) return null;

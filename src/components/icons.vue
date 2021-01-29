@@ -1,5 +1,5 @@
 <template>
-  <v-tooltip :disabled = "tipDisabled" bottom>
+  <v-tooltip :disabled="tipDisabled" bottom>
     <template v-slot:activator="{ on, attrs }">
       <span v-bind="attrs" v-on="on">
         <v-icon
@@ -74,10 +74,28 @@
         <v-icon v-else-if="name === 'libraries'" @click="emit()"
           >mdi-database</v-icon
         >
+        <v-icon v-else-if="name === 'twitter'" @click="emit()"
+          >mdi-twitter</v-icon
+        >
+        <v-icon v-else-if="name === 'bio'" @click="emit()"
+          >mdi-text-account</v-icon
+        >
+        <v-icon v-else-if="name === 'hireable'" @click="emit()"
+          >mdi-currency-usd</v-icon
+        >
+        <v-icon v-else-if="name === 'hireable-off'" @click="emit()"
+          >mdi-currency-usd-off</v-icon
+        >
+        <v-icon v-else-if="name === 'followers'" @click="emit()"
+          >mdi-account-group</v-icon
+        >
+        <v-icon v-else-if="name === 'blog'" @click="emit()"
+          >mdi-web</v-icon
+        >
       </span>
     </template>
     <span>
-      {{tip}}
+      {{ tip }}
     </span>
   </v-tooltip>
 </template>
@@ -86,8 +104,8 @@ import maps from "@/js/storemaps";
 export default {
   name: "icons",
   computed: {
-    tipDisabled () {
-      return !this.tip
+    tipDisabled() {
+      return !this.tip;
     },
     ...maps.state,
   },
@@ -98,7 +116,7 @@ export default {
   },
   props: {
     name: String,
-    tip: String
+    tip: String,
   },
 };
 </script>

@@ -1,7 +1,18 @@
-
 class GitOwner {
-
-  static decorations = ["name", "company", "location", "email"];
+  static decorations = [
+    "twitter_username",
+    "name",
+    "company",
+    "location",
+    "email",
+    "bio",
+    "hireable",
+    "bio",
+    "public_repos",
+    "followers",
+    "createdAt",
+    "blog",
+  ];
   constructor({ repository, importFields }) {
     if (importFields) {
       this.fields = importFields;
@@ -12,25 +23,21 @@ class GitOwner {
         "html_url",
         "id",
         "login",
-        "html_url"
+        "html_url",
       ].reduce((p, c) => {
         p[c] = owner[c];
         return p;
       }, {});
-      if (!this.fields.name) this.fields.name === this.fields.login
-
+      if (!this.fields.name) this.fields.name === this.fields.login;
     }
   }
 
   decorate(body) {
-
     if (body) {
       this.constructor.decorations.forEach((f) => {
-        this.fields[f] = body[f]
+        this.fields[f] = body[f];
       });
     }
   }
-
-
 }
 module.exports = GitOwner;

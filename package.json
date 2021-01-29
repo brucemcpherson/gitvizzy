@@ -11,6 +11,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "anchorme": "^2.1.2",
     "core-js": "^3.6.5",
     "d3": "^6.3.1",
     "delay": "^4.4.0",

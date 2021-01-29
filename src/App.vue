@@ -15,11 +15,7 @@
 
       <v-spacer></v-spacer>
       <icons name="refresh" @clicked="refresh" tip="refresh viz" />
-      <icons
-        :name="vizInfoIcon"
-        @clicked="flipVizInfo()"
-        :tip="vizInfoTip"
-      />
+      <icons :name="vizInfoIcon" @clicked="flipVizInfo()" :tip="vizInfoTip" />
       <icons :name="filterIcon" @clicked="flipFilterPlus" :tip="filterTip" />
       <icons :name="detailIcon" @clicked="flipShowDetail" :tip="detailTip" />
     </v-app-bar>
@@ -141,8 +137,8 @@ export default {
     flipSidebar() {
       this.sidebarMenu = !this.sidebarMenu;
     },
-    refresh () {
-      this.updateRoot(true)
+    refresh() {
+      this.updateRoot(true);
     },
     ...maps.actions,
     ...maps.mutations,
@@ -152,3 +148,4 @@ export default {
   }),
 };
 </script>
+

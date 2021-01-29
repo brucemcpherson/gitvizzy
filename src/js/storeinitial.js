@@ -9,6 +9,7 @@ const _initial = {
     mf: null,
     // this'll get set to a proper value once the dom is loaded
     width: 100,
+    hireableOwners: false,
     ownerFilter: [],
     libraryFilter: [],
     oauthScopeFilter: [],
@@ -29,8 +30,8 @@ const _initial = {
     vizInfo: true,
     colors: {
       spinner: "amber accent-1",
-      bigTree: "red accent-1",
-      smallTree: "pink accent-1",
+      bigTree: null,
+      smallTree: null,
       info: "pink",
     },
   },
@@ -65,6 +66,9 @@ const _initial = {
     },
     setInfoData(state, value) {
       state.infoData = value;
+    },
+    _hireableOwners(state, value) {
+      state.hireableOwners = value;
     },
     _ownerFilter(state, value) {
       state.ownerFilter = value;
@@ -112,6 +116,14 @@ const _initial = {
         commit("setCacheTimestamp", timestamp);
         dispatch("updateRoot");
       });
+    },
+    setHireableOwners({ dispatch, commit }, value) {
+      commit("_hireableOwners", value);
+      logEvent("filter", {
+        name: "hireableOwners",
+        value,
+      });
+      dispatch("updateRoot");
     },
     setOwnerFilter({ dispatch, commit }, value) {
       commit("_ownerFilter", value);

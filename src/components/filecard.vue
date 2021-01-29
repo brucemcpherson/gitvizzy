@@ -59,8 +59,8 @@ export default {
   },
 };
 </script>
+
 <style scoped>
-/* unvisited link */
 a:link {
   color: #f5f5f5;
 }

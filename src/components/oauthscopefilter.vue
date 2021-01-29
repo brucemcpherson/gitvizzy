@@ -15,6 +15,8 @@
     clearable
     hide-selected
     :menu-props="{ closeOnClick: true }"
+    :search-input.sync="search"
+    @change="search = ''"
   >
     <template v-slot:selection="data">
       <v-chip
@@ -46,7 +48,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-import {getOauthScopes} from '@/js/d3prep'
+import { getOauthScopes } from "@/js/d3prep";
 export default {
   name: "oauth-scope-filter",
   methods: {
@@ -55,12 +57,19 @@ export default {
     },
     ...maps.actions,
   },
+  data: () => {
+    return {
+      search: null,
+    };
+  },
   computed: {
     items() {
       const ot = getOauthScopes(this.mf);
       return (ot || []).map((f) => ({
         oauthScope: f,
-        name: f.label.replace("https://www.googleapis.com/auth/", "").replace("https://www.google.com/",""),
+        name: f.label
+          .replace("https://www.googleapis.com/auth/", "")
+          .replace("https://www.google.com/", ""),
         id: f.id,
         versionNames: f.label,
       }));
