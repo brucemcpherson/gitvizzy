@@ -24,7 +24,7 @@ const makeChildren = ({ map, matchId, id, state, filter, type }) => {
   return children;
 };
 
-const makeManifestChildren = ({ mf, id, state, repoName }) => {
+const makeManifestChildren = ({ mf, id, state, repoName, ownerPic }) => {
   const manifest = mf.manifests.get(id);
   const m = [
     {
@@ -101,6 +101,7 @@ const makeManifestChildren = ({ mf, id, state, repoName }) => {
         type: "entries",
         manifestType: f,
         repoName,
+        ownerPic
       };
     });
 
@@ -225,6 +226,7 @@ export const makeOwnerTreeData = (state) => {
           type: "repos",
         }).map((f) => {
           return {
+            ownerPic: c.fields.avatar_url,
             repoName: f.fields.name,
             repo: f,
             name: f.fields.name,
@@ -240,6 +242,7 @@ export const makeOwnerTreeData = (state) => {
                 const manifest = mf.manifests.get(g.fields.sha);
                 const { path: fp } = g.fields;
                 return {
+                  ownerPic: c.fields.avatar_url,
                   repoName: f.fields.name,
                   name: fp,
                   manifest,
@@ -251,6 +254,7 @@ export const makeOwnerTreeData = (state) => {
                     id: g.fields.sha,
                     state,
                     repoName: f.fields.name,
+                    ownerPic: c.fields.avatar_url
                   }),
                 };
               })

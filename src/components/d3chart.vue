@@ -4,24 +4,24 @@
     <div v-if="root">
       <div v-if="sv" id="node-info" style="position:absolute">
         <v-card :color="colors.info" dark>
-          <div
-            class="font-weight-bold caption text-center pt-4 pl-2 pr-2"
-            v-if="repoName"
-          >
-            <v-chip color="secondary" label>
-              <icons name="repos" />
-              <span class="caption ml-1">{{ repoName }}</span>
+          <v-toolbar color="secondary">
+            <v-chip label v-if="repoName" color="accent">
+              <v-avatar small v-if="ownerPic"><img :src="ownerPic"/></v-avatar>
+              <icons v-else name="repos" />
+              <span class="caption ml-2">{{ repoName }}</span>
             </v-chip>
-          </div>
-
+            <v-spacer v-if="repoName"></v-spacer>
+            <div :class="`caption${repoName ? ' pl-2' : ''}`">
+              <v-avatar small v-if="pic"><img :src="pic"/></v-avatar>
+              <icons v-else :name="iconType" />
+              <span class="ml-1">{{ infoName }}</span>
+              <span class="ml-1" v-if="infoChildrenCount"
+                >({{ infoChildrenCount
+                }}<span class="ml-1">{{ infoChildrenName }})</span></span
+              >
+            </div>
+          </v-toolbar>
           <v-card-text>
-            <icons :name="iconType" />
-            <span class="ml-1">{{ infoName }}</span>
-            <span class="ml-1" v-if="infoChildrenCount"
-              >({{ infoChildrenCount
-              }}<span class="ml-1">{{ infoChildrenName }})</span></span
-            >
-
             <owner-card
               :fields="fields"
               v-if="isOwner"
@@ -44,6 +44,46 @@
               :listColor="colors.info"
               :manifest="manifestParent"
             />
+            <library-card
+              :fields="entry"
+              v-else-if="isLibrary"
+              :listColor="colors.info"
+            />
+            <advanced-service-card
+              :fields="entry"
+              v-else-if="isAdvancedService"
+              :listColor="colors.info"
+            />
+            <data-studio-card
+              :fields="entry"
+              v-else-if="isDataStudio"
+              :listColor="colors.info"
+            />
+            <oauth-scope-card
+              :fields="entry"
+              v-else-if="isOauthScope"
+              :listColor="colors.info"
+            />
+            <runtime-version-card
+              :fields="entry"
+              v-else-if="isRuntimeVersion"
+              :listColor="colors.info"
+            />
+            <time-zone-card
+              :fields="entry"
+              v-else-if="isTimeZone"
+              :listColor="colors.info"
+            />
+            <webapp-card
+              :fields="entry"
+              v-else-if="isWebapp"
+              :listColor="colors.info"
+            />
+            <add-on-card
+              :fields="entry"
+              v-else-if="isAddOn"
+              :listColor="colors.info"
+            />
           </v-card-text>
         </v-card>
       </div>
@@ -57,16 +97,33 @@ import icons from "@/components/icons";
 import ownercard from "@/components/ownercard";
 import repocard from "@/components/repocard";
 import filecard from "@/components/filecard";
+import librarycard from "@/components/librarycard";
+import datastudiocard from "@/components/datastudiocard";
+import oauthscopecard from "@/components/oauthscopecard";
+import advancedservicecard from "@/components/advancedservicecard";
 import manifestparentcard from "@/components/manifestparentcard";
+import runtimeversioncard from "@/components/runtimeversioncard";
+import timezonecard from "@/components/timezonecard";
+import webappcard from "@/components/webappcard";
+import addoncard from "@/components/addoncard";
+import delay from "delay";
 import * as d3 from "d3";
 
 export default {
   components: {
     icons,
+    "advanced-service-card": advancedservicecard,
     "owner-card": ownercard,
     "repo-card": repocard,
     "file-card": filecard,
     "manifest-parent-card": manifestparentcard,
+    "library-card": librarycard,
+    "data-studio-card": datastudiocard,
+    "oauth-scope-card": oauthscopecard,
+    "runtime-version-card": runtimeversioncard,
+    "time-zone-card": timezonecard,
+    "webapp-card": webappcard,
+    "add-on-card": addoncard,
   },
   name: "d3chart",
   watch: {
@@ -79,9 +136,7 @@ export default {
     this.resize();
     this.makeSvg();
 
-    this.g = this.svg
-      .append("g")
-      .attr("font-size", 8);
+    this.g = this.svg.append("g").attr("font-size", 8);
 
     this.link = this.g
       .append("g")
@@ -118,16 +173,15 @@ export default {
         const { width } = n.getBoundingClientRect();
         // want to position it so its all on the screen slight left and down
         // it must be at least width from the right border and >0
+        const adjustLeft = Math.max(
+          10,
+          Math.min(svgDim.width - width, left - width / 3 - 10)
+        );
+
         s.style("left", left + "px")
           .transition()
           .duration(200)
-          .style(
-            "left",
-            Math.max(
-              10,
-              Math.min(svgDim.width - width, left - width / 3 - 10)
-            ) + "px"
-          )
+          .style("left", adjustLeft + "px")
           .style("top", top + 24 + "px");
       });
     },
@@ -135,7 +189,7 @@ export default {
       const svg = this.svg;
       const g = this.g;
       const root = this.root;
-
+      // this is slow - there are thousands of nodes ... how to improve it?
       if (root && svg) {
         let x0 = Infinity;
         let x1 = -Infinity;
@@ -172,19 +226,32 @@ export default {
           .attr("fill", (d) => (d.children ? "#555" : "#999"))
           .attr("r", 2.5);
 
-        node.selectAll("text").remove();
+        // the purpose of these delays is to get some of the dom updated at least
+        // as the whole thing looks like it's not doing anything
+        delay(1)
+          .then(() => {
+            node.selectAll("text").remove();
 
-        node
-          .append("text")
-          .on("mouseover", this.handleMouseOver)
-          .on("mouseout", this.handleMouseOut)
-          .attr("dy", "0.31em")
-          .attr("x", (d) => (d.children ? -6 : 6))
-          .attr("text-anchor", (d) => (d.children  ? "end" : "start"))
-          .text((d) => d.data.name)
-          .clone(true)
-          .lower()
-          .attr("stroke", "white");
+            node
+              .append("text")
+              .on("mouseover", this.handleMouseOver)
+              .on("mouseout", this.handleMouseOut)
+              .attr("dy", "0.31em")
+              .attr("x", (d) => (d.children ? -6 : 6))
+              .attr("text-anchor", (d) => (d.children ? "end" : "start"))
+              .text((d) => d.data.name);
+
+            return delay(1);
+          })
+          .then(() => {
+            node
+              .selectAll("text")
+              .clone(true)
+              .lower()
+              .attr("stroke", "white");
+            // signal it's all over
+            this.setMaking(false);
+          });
       } else {
         this.setInfoData(null);
       }
@@ -221,6 +288,12 @@ export default {
         this.infoData.children &&
         (this.infoData.children.length || this.infoData.childrenCount)
       );
+    },
+    ownerPic() {
+      return this.infoData && this.infoData.ownerPic;
+    },
+    pic() {
+      return this.isOwner && this.fields.avatar_url;
     },
     infoName() {
       if (this.isRepo) {
@@ -266,6 +339,30 @@ export default {
     manifestParent() {
       return this.isManifestParent && this.infoData && this.infoData.target;
     },
+    isLibrary() {
+      return this.manifestType === "libraries";
+    },
+    isDataStudio() {
+      return this.manifestType === "dataStudio";
+    },
+    isAdvancedService() {
+      return this.manifestType === "advancedServices";
+    },
+    isOauthScope() {
+      return this.manifestType === "oauthScopes";
+    },
+    isRuntimeVersion() {
+      return this.manifestType === "runtimeVersion";
+    },
+    isTimeZone() {
+      return this.manifestType === "timeZone";
+    },
+    isWebapp() {
+      return this.manifestType === "webapp";
+    },
+    isAddOn() {
+      return this.manifestType === "addOns";
+    },
     manifest() {
       return (
         this.infoData &&
@@ -273,8 +370,25 @@ export default {
         this.infoData.manifest.manifest
       );
     },
+    entry() {
+      if (!this.isManifestEntry || !this.infoData.entry) return null;
+      let e = this.infoData.entry;
+      // normalize as some entries are not objects
+      if (typeof e !== "object") {
+        e = {
+          value: e,
+        };
+      }
+      return {
+        name: this.infoData.name,
+        ...e,
+      };
+    },
     isManifestEntry() {
       return this.infoData && this.infoData.manifestType;
+    },
+    manifestType() {
+      return this.isManifestEntry && this.infoData.manifestType;
     },
     fields() {
       if (this.isRepo) return this.infoData.repo && this.infoData.repo.fields;

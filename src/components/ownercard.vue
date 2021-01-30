@@ -116,7 +116,6 @@ export default {
   },
   computed: {
     isHireable() {
-      console.log(this.fields);
       return this.fields && this.fields.hireable;
     },
     hireableIcon() {
@@ -124,10 +123,8 @@ export default {
     },
     hireableText() {
       return this.isHireable
-        ? "Hireable"
-        : this.fields && this.fields.hireable === null
-        ? "Unknown hireability"
-        : "Not hireable";
+        ? "Available for hire" : "Not available for hire"
+
     },
     cleanTwitter() {
       return (

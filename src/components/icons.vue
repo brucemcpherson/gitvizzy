@@ -54,6 +54,12 @@
         <v-icon v-else-if="name === 'oauthScopes'" @click="emit()"
           >mdi-shield</v-icon
         >
+        <v-icon v-else-if="name === 'access'" @click="emit()"
+          >mdi-account-key</v-icon
+        >
+        <v-icon v-else-if="name === 'as'" @click="emit()"
+          >mdi-account-convert</v-icon
+        >
         <v-icon v-else-if="name === 'addOns'" @click="emit()">mdi-cloud</v-icon>
         <v-icon v-else-if="name === 'close-left'" @click="emit()"
           >mdi-chevron-left</v-icon
@@ -80,6 +86,13 @@
         <v-icon v-else-if="name === 'bio'" @click="emit()"
           >mdi-text-account</v-icon
         >
+        <v-icon v-else-if="name === 'fees'" @click="emit()"
+          >mdi-cash-multiple</v-icon
+        >
+        <v-icon v-else-if="name === 'support'" @click="emit()"
+          >mdi-lifebuoy</v-icon
+        >
+        <v-icon v-else-if="name === 'text'" @click="emit()">mdi-text</v-icon>
         <v-icon v-else-if="name === 'hireable'" @click="emit()"
           >mdi-currency-usd</v-icon
         >
@@ -89,8 +102,18 @@
         <v-icon v-else-if="name === 'followers'" @click="emit()"
           >mdi-account-group</v-icon
         >
-        <v-icon v-else-if="name === 'blog'" @click="emit()"
-          >mdi-web</v-icon
+        <v-icon v-else-if="name === 'version'" @click="emit()"
+          >mdi-counter</v-icon
+        >
+        <v-icon v-else-if="name === 'symbol'" @click="emit()"
+          >mdi-feather</v-icon
+        >
+        <v-icon v-else-if="name === 'blog'" @click="emit()">mdi-web</v-icon>
+        <v-icon v-else-if="name === 'copy'" @click="emit()"
+          >mdi-content-copy</v-icon
+        >
+        <v-icon v-else-if="name === 'id'" @click="emit()"
+          >mdi-identifier</v-icon
         >
       </span>
     </template>

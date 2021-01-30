@@ -24,7 +24,7 @@
       app
       floating
       v-model="sidebarMenu"
-      :width="$vuetify.breakpoint.mdAndUp ? 512 : 256"
+      :width="$vuetify.breakpoint.mdAndUp ? 400 : 256"
     >
       <v-list dense color="primary" dark>
         <v-list-item>
@@ -136,6 +136,8 @@ export default {
   methods: {
     flipSidebar() {
       this.sidebarMenu = !this.sidebarMenu;
+      // clear any info screens
+      this.setInfoMoused(false);
     },
     refresh() {
       this.updateRoot(true);

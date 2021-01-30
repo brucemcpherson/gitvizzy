@@ -25,7 +25,7 @@
         close
         @click="data.select"
         @click:close="remove(data.item)"
-        class="mt-1 mb-1"
+        class="mr-2"
       >
         <v-avatar left>
           <v-img :src="data.item.avatar_url"></v-img>
@@ -59,10 +59,10 @@ export default {
     },
     ...maps.actions,
   },
-  data: () => {
+  data: ()=> {
     return {
-      loading: false,
-    };
+      search: null
+    }
   },
   computed: {
     items() {

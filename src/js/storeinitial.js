@@ -240,7 +240,7 @@ const _initial = {
 
       return delay(1).then(() => {
         commit("setRoot");
-        commit("setMaking", false);
+
       });
     },
   },
