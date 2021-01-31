@@ -26,7 +26,7 @@ export default {
   props: {
     fields: Object,
     listColor: String,
-  },
+  }
 };
 </script>
 <style scoped>

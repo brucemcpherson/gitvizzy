@@ -47,6 +47,12 @@
         <v-icon v-else-if="name === 'github'" @click="emit()"
           >mdi-github</v-icon
         >
+        <v-icon v-else-if="name === 'clasp'" @click="emit()"
+          >mdi-package-variant</v-icon
+        >
+        <v-icon v-else-if="name === 'stats'" @click="emit()"
+          >mdi-table-eye</v-icon
+        >
         <v-icon v-else-if="name === 'webapp'" @click="emit()">mdi-web</v-icon>
         <v-icon v-else-if="name === 'runtimeVersion'" @click="emit()"
           >mdi-book</v-icon

@@ -1,7 +1,5 @@
 const d3 = require("d3");
 
-// how to make select lists that respect all the current filters.
-
 const makeChildren = ({ map, matchId, id, state, filter, type }) => {
   const { filterPlus } = state || {};
   const children = Array.from(map.values())
@@ -101,7 +99,7 @@ const makeManifestChildren = ({ mf, id, state, repoName, ownerPic }) => {
         entry: g,
         list,
         type: "entries",
-        manifestType: f,  
+        manifestType: f,
         repoName,
         ownerPic
       };
