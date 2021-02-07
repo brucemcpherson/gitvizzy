@@ -110,6 +110,8 @@ export default {
   components: {
     icons,
   },
+
+    
   props: {
     fields: Object,
     listColor: String,
@@ -134,6 +136,7 @@ export default {
       );
     },
     cleanBio() {
+      
       const bio = this.fields && this.fields.bio;
       if (!bio) return null;
       return anchorme({

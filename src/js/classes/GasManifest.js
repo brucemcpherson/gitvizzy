@@ -1,23 +1,11 @@
 class GasManifest {
   constructor(shax) {
     this.shax = shax;
-    const content = this.shax && this.shax.fields && this.shax.fields.content;
-    try {
-      // some manifests have trailing commas, we can fix it by double parsing
-      const t = JSON.stringify(content);
-      this.manifest = t ? JSON.parse(JSON.parse(t)) : null;
-    } catch (err) {
-      console.log(
-        "skipping after failed to parse manifest",
-        this.shax.fields.repoFullName,
-        content
-      );
-      this.manifest = null;
-    }
+    this.manifest = this.shax && this.shax.fields && this.shax.fields.content;
   }
 
   get id() {
-    return this.shax.id;
+    return this.shax && this.shax.fields && this.shax.fields.id;
   }
 
   prop(type) {
@@ -27,6 +15,7 @@ class GasManifest {
   get advancedServices() {
     return this.dependencies && this.dependencies.enabledAdvancedServices;
   }
+  
   get libraries() {
     /* 
       "developmentMode": boolean,
@@ -62,6 +51,14 @@ class GasManifest {
   }
   get dataStudio() {
     return this.prop("dataStudio");
+  }
+  get firstRepoName() {
+    return (
+      this.shax &&
+      this.shax &&
+      this.shax.fields &&
+      this.shax.fields.repoFullName
+    );
   }
 }
 

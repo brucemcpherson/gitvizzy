@@ -1,12 +1,14 @@
 import { gasVizzyInit, delay } from "./gasvizzy";
 import { logEvent } from "./fb";
+import { applyFilters } from "./filtering";
+import { tree, arrangeTreeData } from "./d3prep";
 
-import { tree, makeOwnerTreeData } from "./d3prep";
 
 const _initial = {
   state: {
     gd: null,
     mf: null,
+    cfManifests: null,
     // this'll get set to a proper value once the dom is loaded
     width: 100,
     hireableOwners: false,
@@ -21,6 +23,9 @@ const _initial = {
     timeZoneFilter: [],
     webappFilter: [],
     dataStudioFilter: [],
+    interlockedFilters: true,
+    dob: null,
+    fob: null,
     root: null,
     cacheTimestamp: null,
     making: false,
@@ -28,11 +33,16 @@ const _initial = {
     infoData: null,
     infoMoused: false,
     vizInfo: true,
+    fobOwners: null,
+    fobRepos: null,
+    viewType: "owners",
     colors: {
       spinner: "amber accent-1",
       bigTree: null,
       smallTree: null,
       info: "pink",
+      dotChildren: "lime",
+      dotNoChildren: "pink",
     },
   },
   mutations: {
@@ -46,11 +56,22 @@ const _initial = {
       state.root = null;
     },
     setRoot(state) {
-      const data = makeOwnerTreeData(state);
+      const data = arrangeTreeData(state);
       state.root = data ? tree({ data, width: state.width }) : null;
+    },
+    setDob(state, value) {
+      state.dob = value;
+    },
+    setFob(state, value) {
+      state.fob = value;
+      state.fobOwners = value && value.owners && value.owners.allFiltered();
+      state.fobRepos = value && value.repos && value.repos.allFiltered();
     },
     setMaking(state, value) {
       state.making = value;
+    },
+    setCfManifests(state, mf) {
+      state.cfManifests = mf;
     },
     setMf(state, mf) {
       state.mf = mf;
@@ -66,6 +87,12 @@ const _initial = {
     },
     setInfoData(state, value) {
       state.infoData = value;
+    },
+    _viewType(state, value) {
+      state.viewType = value;
+    },
+    _interlockedFilters(state, value) {
+      state.interlockedFilters = value;
     },
     _hireableOwners(state, value) {
       state.hireableOwners = value;
@@ -107,20 +134,44 @@ const _initial = {
       state.filterPlus = value;
     },
   },
+  getters: {
+    fobOwners(state) {
+      return state.fob && state.fob.owners && state.fob.owners.allFiltered();
+    },
+  },
   actions: {
     vizzyInit({ commit, dispatch }) {
       commit("setMaking", true);
-      return gasVizzyInit().then(({ gd, mf, timestamp }) => {
+      return gasVizzyInit().then(({ gd, mf, timestamp, dob, fob }) => {
         commit("setGd", gd);
         commit("setMf", mf);
         commit("setCacheTimestamp", timestamp);
+        commit("setDob", dob);
+        commit("setFob", fob);
         dispatch("updateRoot");
       });
+    },
+    setInterlockedFilters({ dispatch, commit }, value) {
+      commit("_interlockedFilters", value);
+      logEvent("filter", {
+        name: "interlockedFilters",
+        value,
+      });
+      dispatch("updateRoot");
     },
     setHireableOwners({ dispatch, commit }, value) {
       commit("_hireableOwners", value);
       logEvent("filter", {
         name: "hireableOwners",
+        value,
+      });
+      dispatch("updateRoot");
+    },
+    setViewType({ dispatch, commit }, value) {
+      console.log('setting viewtype', value)
+      commit("_viewType", value);
+      logEvent("filter", {
+        name: "viewType",
         value,
       });
       dispatch("updateRoot");
@@ -229,18 +280,23 @@ const _initial = {
         value: state.vizInfo,
       });
     },
-    updateRoot({ commit }, force) {
+    updateRoot({ commit, state }, force) {
       // this allows re-render of whatever to show before waiting
       // for the length dom update
       if (force) {
         commit("clearRoot");
       }
+
       commit("setMaking", true);
       commit("setInfoMoused", false);
+      const { mf, cfManifests } = applyFilters(state);
+
+      commit("setCfManifests", cfManifests);
+      commit("setFob", state.fob);
+      commit("setMf", mf);
 
       return delay(1).then(() => {
         commit("setRoot");
-
       });
     },
   },

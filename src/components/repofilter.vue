@@ -4,6 +4,7 @@
     :items="items"
     chips
     deletable-chips
+    no-data-text="No more matching repos"
     :label="`Repositories (${(items && items.length) || '-'})`"
     multiple
     small-chips
@@ -15,8 +16,9 @@
     clearable
     hide-selected
     :menu-props="{ closeOnClick: true }"
-          :search-input.sync="search"
-      @change="search = ''"
+    :search-input.sync="search"
+    @change="search = ''"
+    
   >
     <template v-slot:selection="data">
       <v-chip
@@ -49,7 +51,6 @@
 
 <script>
 import maps from "@/js/storemaps";
-import { getRepos } from "@/js/d3prep";
 export default {
   name: "repo-filter",
 
@@ -59,19 +60,14 @@ export default {
     },
     ...maps.actions,
   },
-  data: ()=> {
+  data: () => {
     return {
-      search: null
-    }
+      search: null,
+    };
   },
   computed: {
     items() {
-      const ot = getRepos({
-        gd: this.gd,
-        hireableOwners: this.hireableOwners,
-        ownerFilter: this.ownerFilter,
-      });
-      return (ot || []).map((f) => f.fields);
+      return (this.fobRepos || []).map((f) => f.fields);
     },
     repoList: {
       get() {

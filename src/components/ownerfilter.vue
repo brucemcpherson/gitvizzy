@@ -1,12 +1,9 @@
 <template>
   <span>
-    <v-checkbox
-      v-model="hireables"
-      label="Only show hireable contributors"
-    ></v-checkbox>
     <v-autocomplete
       v-model="ownerList"
       :items="items"
+      no-data-text="No more matching owners"
       chips
       deletable-chips
       :label="`Owners (${(items && items.length) || '-'})`"
@@ -22,6 +19,7 @@
       :menu-props="{ closeOnClick: true }"
       :search-input.sync="search"
       @change="search = ''"
+      
     >
       <template v-slot:selection="data">
         <v-chip
@@ -31,6 +29,7 @@
           @click="data.select"
           @click:close="removeOwner(data.item)"
           class="mt-1 mb-1"
+          
         >
           <v-avatar left>
             <v-img :src="data.item.avatar_url"></v-img>
@@ -60,10 +59,9 @@
 
 <script>
 import maps from "@/js/storemaps";
-import { getOwners } from "@/js/d3prep";
+
 export default {
   name: "owner-filter",
-
   methods: {
     removeOwner(item) {
       this.ownerList = this.ownerList.filter((f) => f !== item.id);
@@ -76,18 +74,8 @@ export default {
     }
   },
   computed: {
-    hireables: {
-      get () {
-        return this.hireableOwners
-      },
-      set (value) {
-        this.setHireableOwners(value)
-      }
-    },
     items() {
-      // need to force a redo if hireable owners changes somehow
-      const ot = getOwners({ gd: this.gd, hireableOwners: this.hireableOwners });
-      return (ot || []).map((f) => f.fields);
+      return (this.fobOwners || []).map((f) => f.fields);
     },
     ownerList: {
       get() {
@@ -97,7 +85,7 @@ export default {
         this.setOwnerFilter(value);
       },
     },
-    ...maps.state,
+    ...maps.state
   },
 };
 </script>

@@ -1,186 +1,99 @@
 const d3 = require("d3");
+import { reduceManifests } from "./filtering";
 
-// how to make select lists that respect all the current filters.
-
-const makeChildren = ({ map, matchId, id, state, filter, type }) => {
-  const { filterPlus } = state || {};
-  const children = Array.from(map.values())
-    .filter((f) => f.fields[matchId] === id)
-    .filter((f) => {
-      return (
-        !filter ||
-        !filter.length ||
-        !filterPlus ||
-        filter.find((g) => g === f.fields.id)
-      );
-    })
-    .map((f) => {
-      return {
-        ...f,
-        type,
-      };
-    })
-    .sort((a, b) => {
-      return a.name === b.name ? 0 : a.name > b.name ? 1 : -1;
-    });
-  return children;
+const idAccessors = {
+  libraries: "libraryId",
 };
 
-const makeManifestChildren = ({ mf, id, state, repoName, ownerPic }) => {
+const sorter = (items) =>
+  items.sort((a, b) => {
+    const aName = a.fields.name;
+    const bName = b.fields.name;
+    return aName === bName ? 0 : aName > bName ? 1 : -1;
+  });
+
+const manifestChild = ({ manifestType, target, repoName, ownerPic }) => {
+  // some manifests are arrays, so are not
+  if (!Array.isArray(target)) target = [target];
+
+  const children = target.map((g) => {
+    // various strategies for picking up the description
+    let name = null;
+    let list = null;
+
+    if (typeof g === "string") {
+      name = g.replace("https://www.googleapis.com/auth/", "");
+      list = [g];
+    } else if (manifestType === "addOns") {
+      name = Object.keys(g).join(",");
+      list = Object.keys(g);
+    } else {
+      name = g.userSymbol || g.access || g.name;
+      list = [g.libraryId || g.serviceId || name];
+      if (g.version) name += `.v${g.version}`.replace(".vv", ".v");
+    }
+
+    return {
+      name,
+      // empty children will mark the end of the tree for d3
+      children: [],
+      entry: g,
+      list,
+      type: "entries",
+      manifestType,
+      repoName,
+      ownerPic,
+    };
+  });
+
+  const pack = {
+    name: manifestType,
+    children,
+    target,
+    type: manifestType,
+    repoName,
+  };
+
+  return pack;
+};
+
+const makeManifestChildren = ({ mf, id, repoName, ownerPic }) => {
   const manifest = mf.manifests.get(id);
   const m = [
     {
       name: "libraries",
-      filter: "libraryFilter",
     },
     {
       name: "advancedServices",
-      filter: "advancedServiceFilter",
     },
     {
       name: "timeZone",
-      filter: "timeZoneFilter",
     },
     {
       name: "runtimeVersion",
-      filter: "runtimeVersionFilter",
     },
     {
       name: "webapp",
-      filter: "webappFilter",
     },
     {
       name: "addOns",
-      filter: "addOnFilter",
     },
     {
       name: "oauthScopes",
-      filter: "oauthScopeFilter",
     },
     {
       name: "dataStudio",
-      filter: "dataStudioFilter",
     },
   ].map((n) => {
     // eg libraries
     const f = n.name;
-    // the currently active filter for this type
-    const filter = state[n.filter];
-    // whether filtering is even active
-    const { filterPlus } = state;
     // the values in the manifest for this type
     let target = manifest[f] || [];
-    // some manifests are arrays, so are not
-    if (!Array.isArray(target)) target = [target];
 
-    // for each item return whether they passed the filter
-    // their children willbe the various value - a list of scopes etc
-    // the manifest will be accepted if
-    // each of the children present either pass filtering or there's no filtering for that item
-    const children = target.map((g) => {
-      // various strategies for picking up the description
-      let name = null;
-      let list = null;
-
-      if (typeof g === "string") {
-        name = g.replace("https://www.googleapis.com/auth/", "");
-        list = [g];
-      } else if (f === "addOns") {
-        name = Object.keys(g).join(",");
-        list = Object.keys(g);
-      } else {
-        name = g.userSymbol || g.access || g.name;
-        list = [g.libraryId || g.serviceId || name];
-        if (g.version) name += `.v${g.version}`.replace(".vv", ".v");
-      }
-
-      return {
-        name,
-        // empty children will mark the end of the tree for d3
-        children: [],
-        entry: g,
-        list,
-        type: "entries",
-        manifestType: f,  
-        repoName,
-        ownerPic
-      };
-    });
-
-    const keep =
-      // there is no filter
-      !filter ||
-      !filter.length ||
-      !filterPlus ||
-      // there's a filter but at least one of the children passes it
-      (children.length &&
-        children.some((g) => g.list.some((h) => filter.indexOf(h) !== -1)));
-
-    const pack = {
-      name: f,
-      keep,
-      children,
-      target,
-      type: f,
-      repoName,
-    };
-
-    return pack;
+    return manifestChild({ manifestType: f, target, repoName, ownerPic });
   });
 
-  // suppress any that dont have any children, and all of it if it fails filter
-  return m.every((h) => h.keep) ? m.filter((h) => h.children.length) : [];
-};
-
-export const getGdItem = (state, type, filter) => {
-  const { gd, filterPlus } = state;
-  if (!gd) return null;
-
-  const items = Array.from(gd[type].values())
-    .filter((f) => {
-      return (
-        !filter ||
-        !filter.length ||
-        !filterPlus ||
-        filter.find((g) => g === f.fields.id)
-      );
-    })
-    .map((f) => {
-      if (!f.fields.name) f.fields.name = f.fields.login;
-      return {
-        ...f,
-        type,
-      };
-    })
-    .sort((a, b) => {
-      const aName = a.fields.name;
-      const bName = b.fields.name;
-      return aName === bName ? 0 : aName > bName ? 1 : -1;
-    });
-
-  return items;
-};
-
-export const getOwners = (state) => {
-  const owners = getGdItem(state, "owners", state.ownerFilter);
-  // further filter for hireability
-  return !state.hireableOwners || !owners
-    ? owners
-    : owners.filter((f) => f.fields.hireable);
-};
-
-export const getRepos = (state) => {
-  // filter to only contain repos owned by selected owners
-  const repos = getGdItem(state, "repos", state.repoFilter);
-  const owners = getOwners(state);
-
-  if (!repos || !owners) return repos;
-
-  const r = repos.filter((f) =>
-    owners.find((g) => g.fields.id === f.fields.ownerId)
-  );
-
-  return r;
+  return m;
 };
 
 const getDependencies = (mf, type) => {
@@ -204,107 +117,243 @@ export const getWebapps = (mf) => getDependencies(mf, "webapps");
 export const getDataStudios = (mf) => getDependencies(mf, "dataStudios");
 export const getTimeZones = (mf) => getDependencies(mf, "timeZones");
 
+export const arrangeTreeData = (state) => {
+  // first job is to do a vanilla tree by owner
+  const { viewType } = state;
+
+  if (viewType === "owners") {
+    const ownerTree = makeOwnerTreeData(state);
+    return ownerTree
+  } else { 
+    const viewTree = makeManifestTreeData(state);
+    return viewTree;
+  }
+
+};
+
 export const makeOwnerTreeData = (state) => {
   // the objective is to make tree shaped data for d3
   // { name: owner, children: [{ name: repo: children: [{ name: libraries }, { name: advanced services }] }] }
-  const { gd, mf } = state;
-  if (!gd || !mf) return null;
-  const owners = getOwners(state);
-  if (!owners) return null;
+  const { gd, dob, fob, showDetail } = state;
 
-  const t = owners.reduce(
-    (p, c) => {
-      const owner = {
-        owner: c,
-        name: c.fields.name,
-        type: c.type,
-        // the children are the repos
-        children: makeChildren({
-          map: gd.repos,
-          matchId: "ownerId",
-          id: c.fields.id,
-          state,
-          filter: state.repoFilter,
-          type: "repos",
-        }).map((f) => {
-          return {
-            ownerPic: c.fields.avatar_url,
-            repoName: f.fields.name,
-            repo: f,
-            name: f.fields.name,
-            type: f.type,
-            // the children are the files
-            children: makeChildren({
-              map: gd.files,
-              matchId: "repositoryId",
-              id: f.fields.id,
+  if (!gd || !state.mf) return null;
+
+  // if theyre not interlocked, then the filtering hasnt been completed yet
+  const mf = state.interlockedFilters ? state.mf : reduceManifests(state);
+
+  // if there are no manifests after interlocking, then there's nothing to do yet
+  if (!mf) return null;
+
+  // we'll use this to further reduce the owners, which will contain all owners
+  const reposByOwnerSet = new Set(
+    fob.repos.allFiltered().map(dob.reposByOwner.accessor)
+  );
+
+  const owners = sorter(
+    fob.owners
+      .allFiltered()
+      .filter((d) => reposByOwnerSet.has(dob.owners.accessor(d)))
+  );
+  // TODO
+  // can speed this up replacing by maps.
+  const repos = fob.repos.allFiltered();
+  const files = fob.files.allFiltered();
+
+  // this is the kind of tree needed by d3
+  const getOwnerAndChildren = ({ ownerOb }) => {
+    const id = dob.owners.accessor(ownerOb);
+    const children = repos
+      .filter((s) => dob.reposByOwner.accessor(s) === id)
+      .map((repoOb) => {
+        const id = dob.repos.accessor(repoOb);
+        const children = files
+          .filter((s) => dob.filesByRepo.accessor(s) === id)
+          .map((fileOb) => {
+            const id = dob.files.accessor(fileOb);
+            const manifest = mf.manifests.get(fileOb.fields.sha);
+            const { path: fp } = fileOb.fields;
+            return {
+              ownerPic: ownerOb.fields.avatar_url,
+              repoName: repoOb.fields.name,
+              name: fp,
+              manifest,
+              id,
               type: "files",
-            })
-              .map((g) => {
-                const manifest = mf.manifests.get(g.fields.sha);
-                const { path: fp } = g.fields;
-                return {
-                  ownerPic: c.fields.avatar_url,
-                  repoName: f.fields.name,
-                  name: fp,
-                  manifest,
-                  type: g.type,
-                  file: g,
-                  // the children are each of the manifest options
-                  children: makeManifestChildren({
+              file: fileOb,
+              // the children are each of the manifest options
+              // but we dont need them if only  the abbreviated map is being shown
+              children: showDetail
+                ? makeManifestChildren({
                     mf,
-                    id: g.fields.sha,
+                    id: fileOb.fields.sha,
                     state,
-                    repoName: f.fields.name,
-                    ownerPic: c.fields.avatar_url
-                  }),
-                };
-              })
-              .filter((g) => g.children.length),
-          };
-        }),
-      };
+                    repoName: repoOb.fields.name,
+                    ownerPic: ownerOb.fields.avatar_url,
+                  })
+                : [],
+            };
+          });
+        return {
+          children,
+          childrenCount: children.length,
+          ownerPic: ownerOb.fields.avatar_url,
+          repoName: repoOb.fields.name,
+          repo: repoOb,
+          name: repoOb.fields.name,
+          type: "repos",
+        };
+      });
 
-      p.children.push(owner);
+    return {
+      children,
+      childrenCount: children.length,
+      owner: ownerOb,
+      type: "owners",
+      name: ownerOb.fields.name || ownerOb.fields.login,
+      id,
+    };
+  };
+
+  const t = Array.from(owners.values()).reduce(
+    (p, c) => {
+      const ownerChildren = getOwnerAndChildren({ ownerOb: c });
+      p.children.push(ownerChildren);
+
       return p;
     },
     { name: "owners", children: [], type: "root" }
   );
 
-  // rid of the branches with nothing to show
-  t.children = t.children.map((o) => {
-    o.children = o.children.filter((r) => r.children.length);
-    return o;
-  });
-
-  // now trim top level
-  t.children = t.children.filter((f) => f.children.length);
-
-  // if we're not showing any detail, then we can drop everything below file level
-  if (!state.showDetail) {
-    // owners
-    t.children = t.children.map((o) => {
-      // repos
-      o.children = o.children.map((r) => {
-        //files
-        r.children = r.children.map((z) => {
-          // remember for viz whats been suppressed
-          z.childrenCount = z.children.length;
-          z.childrenType = z.children[0].type;
-          z.children = [];
-          return z;
-        });
-        return r;
-      });
-      return o;
-    });
-  }
-
   return t;
 };
 
+export const makeManifestTreeData = (state) => {
+  const { gd, viewType, cfManifests, fob, dob } = state;
+
+  if (!gd || !state.mf) return null;
+
+  // if theyre not interlocked, then the filtering hasnt been completed yet
+  const mf = state.interlockedFilters ? state.mf : reduceManifests(state);
+
+  // if there are no manifests after interlocking, then there's nothing to do yet
+  if (!mf) return null;
+
+  // use this as the base manifest type
+  const base = cfManifests.allFiltered();
+  // a map will make this easier to reference later
+  const shaMap = fob.files.allFiltered().reduce((p, c) => {
+    const sha = dob.filesBySha.accessor(c);
+    if (!p.has(sha))
+      p.set(sha, {
+        files: [],
+        sha,
+      });
+    p.get(sha).files.push(c);
+    return p;
+  }, new Map());
+
+  const repoMap = new Map(
+    fob.repos.allFiltered().map((f) => [dob.repos.accessor(f), f])
+  );
+  const ownerMap = new Map(
+    fob.owners.allFiltered().map((f) => [dob.owners.accessor(f), f])
+  );
+
+  // now create a tree with that as the base
+  const t = base
+    .filter((f) => f[viewType] && f[viewType].length)
+    .reduce((p, viewItem) => {
+      // by the time we get here, we are only seeing filtered manifests
+      // so confident that view Item is a manifest featuring the viewtype
+      // that is to be the root of the viz.
+      // but we need to blow that out to 1 per item
+      const a = Array.isArray(viewItem[viewType])
+        ? viewItem[viewType]
+        : [viewItem[viewType]];
+
+      a.forEach((g) => {
+        const id = g[idAccessors[viewType]];
+        if (!p.has(id)) {
+          p.set(id, {
+            items: [],
+            id,
+            item: g,
+          });
+        }
+        p.get(id).items.push({
+          viewItem,
+          variant: g,
+        });
+      });
+      return p;
+    }, new Map());
+
+  const viewFiles = Array.from(t.values()).map((value) => {
+    // each item is a child
+
+    const cld = manifestChild({ manifestType: viewType, target: value.item })
+      .children[0];
+    return {
+      name: cld.name,
+      // TODO the versions need to be updated using the variants and the names too
+      entry: cld.entry,
+      list: cld.list,
+      manifestType: cld.manifestType,
+      type: cld.type,
+      children: value.items.reduce((p, f) => {
+        // all the files that match this sha
+        const sha = f.viewItem.id;
+        return p.concat(
+          shaMap.get(sha).files.map((file) => {
+            const repo = repoMap.get(dob.filesByRepo.accessor(file));
+            const owner = ownerMap.get(dob.reposByOwner.accessor(file));
+            const id = dob.files.accessor(file);
+            const manifest = mf.manifests.get(sha);
+            const { path: fp } = file.fields;
+            return {
+              ownerPic: owner.fields.avatar_url,
+              repoName: repo.fields.name,
+              name: fp,
+              manifest,
+              id,
+              type: "files",
+              file,
+              children: [
+                {
+                  ownerPic: owner.fields.avatar_url,
+                  childrenCount: 1,
+                  repoName: repo.fields.name,
+                  repo,
+                  name: repo.fields.name,
+                  type: "repos",
+                  children: [
+                    {
+                      owner,
+                      childrenCount: 0,
+                      type: "owners",
+                      name: owner.fields.name || owner.fields.login,
+                      id: owner.fields.id,
+                      children: [],
+                    },
+                  ],
+                },
+              ],
+            };
+          })
+        );
+      }, []),
+    };
+  }, []);
+
+  return {
+    name: viewType,
+    children: viewFiles,
+    type: "root"
+  }
+};
 export const tree = ({ data, width }) => {
   if (!data || !width) return null;
+  console.log(data)
   const root = d3.hierarchy(data);
   root.dx = 10;
   root.dy = width / (root.height + 1);
@@ -319,4 +368,22 @@ export const mapVersions = (ot) => {
       .map((g) => g.version)
       .join(",") || f.label}`,
   }));
+};
+export const getStats = () => {
+  // generate a bunch of stats
+  return {};
+  /*
+  return ["owners", "repos", "shaxs", "files"].reduce((p, c) => {
+    p[c] = {
+      list: getGdItem(state, c),
+      count: {
+        get() {
+          return this.list.length;
+        },
+      },
+    };
+
+    return p;
+  }, {});
+  */
 };

@@ -84,6 +84,9 @@
               v-else-if="isAddOn"
               :listColor="colors.info"
             />
+            <div v-else-if="isRoot">
+              {{viewType}} tree starts here
+            </div>
           </v-card-text>
         </v-card>
       </div>
@@ -106,7 +109,8 @@ import runtimeversioncard from "@/components/runtimeversioncard";
 import timezonecard from "@/components/timezonecard";
 import webappcard from "@/components/webappcard";
 import addoncard from "@/components/addoncard";
-import delay from "delay";
+import { delayAnimation } from "@/js/fiddly";
+
 import * as d3 from "d3";
 
 export default {
@@ -136,7 +140,7 @@ export default {
     this.resize();
     this.makeSvg();
 
-    this.g = this.svg.append("g").attr("font-size", 8);
+    this.g = this.svg.append("g").attr("font-size", 10);
 
     this.link = this.g
       .append("g")
@@ -175,21 +179,21 @@ export default {
         // it must be at least width from the right border and >0
         const adjustLeft = Math.max(
           10,
-          Math.min(svgDim.width - width, left - width / 3 - 10)
+          Math.min(svgDim.width - width - 10, left - 10)
         );
 
-        s.style("left", left + "px")
-          .transition()
+        s.transition()
           .duration(200)
           .style("left", adjustLeft + "px")
           .style("top", top + 24 + "px");
       });
     },
-    rebuild() {
+    async rebuild() {
       const svg = this.svg;
       const g = this.g;
       const root = this.root;
       // this is slow - there are thousands of nodes ... how to improve it?
+      // see if canvas would be a better option
       if (root && svg) {
         let x0 = Infinity;
         let x1 = -Infinity;
@@ -203,55 +207,62 @@ export default {
         svg.attr("viewBox", [0, 0, this.width, x1 - x0 + root.dx * 2]);
         g.attr("transform", `translate(${root.dy / 3},${root.dx - x0})`);
 
-        this.link
-          .selectAll("path")
-          .data(root.links())
-          .join("path")
-          .attr(
-            "d",
-            d3
-              .linkHorizontal()
-              .x((d) => d.y)
-              .y((d) => d.x)
-          );
+        let node = null;
 
-        const node = this.node
-          .selectAll("g")
-          .data(root.descendants())
-          .join("g")
-          .attr("transform", (d) => `translate(${d.y},${d.x})`);
+        await delayAnimation(0, () => {
+          this.link
+            .selectAll("path")
+            .data(root.links())
+            .join("path")
+            .attr(
+              "d",
+              d3
+                .linkHorizontal()
+                .x((d) => d.y)
+                .y((d) => d.x)
+            );
 
-        node
-          .append("circle")
-          .attr("fill", (d) => (d.children ? "#555" : "#999"))
-          .attr("r", 2.5);
+          node = this.node
+            .selectAll("g")
+            .data(root.descendants())
+            .join("g")
+            .attr("transform", (d) => `translate(${d.y},${d.x})`);
+        });
+
+        await delayAnimation(0, () => {
+          node
+            .append("circle")
+            .attr("fill", (d) => {
+              return d.children || d.data.childrenCount
+                ? this.colors.dotChildren
+                : this.colors.dotNoChildren;
+            })
+            .attr("r", 2);
+        });
 
         // the purpose of these delays is to get some of the dom updated at least
         // as the whole thing looks like it's not doing anything
-        delay(1)
-          .then(() => {
-            node.selectAll("text").remove();
+        await delayAnimation(0, () => {
+          node.selectAll("text").remove();
+          node
+            .append("text")
+            .on("mouseover", this.handleMouseOver)
+            .on("mouseout", this.handleMouseOut)
+            .attr("dy", "0.31em")
+            .attr("x", (d) => (d.children ? -6 : 6))
+            .attr("text-anchor", (d) => (d.children ? "end" : "start"))
+            .text((d) => d.data.name);
+        });
 
-            node
-              .append("text")
-              .on("mouseover", this.handleMouseOver)
-              .on("mouseout", this.handleMouseOut)
-              .attr("dy", "0.31em")
-              .attr("x", (d) => (d.children ? -6 : 6))
-              .attr("text-anchor", (d) => (d.children ? "end" : "start"))
-              .text((d) => d.data.name);
-
-            return delay(1);
-          })
-          .then(() => {
-            node
-              .selectAll("text")
-              .clone(true)
-              .lower()
-              .attr("stroke", "white");
-            // signal it's all over
-            this.setMaking(false);
-          });
+        await delayAnimation(0, () => {
+          node
+            .selectAll("text")
+            .clone(true)
+            .lower()
+            .attr("stroke", "white");
+          // signal it's all over
+          this.setMaking(false);
+        });
       } else {
         this.setInfoData(null);
       }
@@ -296,6 +307,7 @@ export default {
       return this.isOwner && this.fields.avatar_url;
     },
     infoName() {
+      
       if (this.isRepo) {
         return this.fields.name;
       } else if (this.isOwner) {
@@ -304,7 +316,7 @@ export default {
         return this.infoData.name;
       } else if (this.isManifestParent) {
         return this.type;
-      } else if (this.isManifestEntry) {
+      } else if (this.isManifestEntry ) {
         return this.infoData && this.infoData.name;
       } else if (this.isRoot) {
         return "root";
@@ -322,6 +334,7 @@ export default {
       return this.infoData && this.infoData.type;
     },
     isRoot() {
+      console.log(this.type)
       return this.type === "root";
     },
     isRepo() {
@@ -334,7 +347,7 @@ export default {
       return this.type === "files";
     },
     isManifestParent() {
-      return this.infoChildrenName === "entries";
+      return this.infoChildrenName === "entries" && !this.isRoot
     },
     manifestParent() {
       return this.isManifestParent && this.infoData && this.infoData.target;

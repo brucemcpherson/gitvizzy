@@ -2,7 +2,11 @@
   <v-app>
     <v-app-bar app color="primary" dark>
       <v-app-bar-nav-icon @click.stop="flipSidebar"></v-app-bar-nav-icon>
-      <v-app-bar-title>Vizzy</v-app-bar-title>
+      <v-toolbar-title>View vizzy by</v-toolbar-title>
+      <v-btn-toggle v-model="viewToggle" mandatory group dark>
+        <v-btn v-for="vt in viewToggles" :key="vt"><icons :name="vt"/></v-btn>
+      </v-btn-toggle>
+      <v-spacer></v-spacer>
       <v-progress-circular
         indeterminate
         v-if="making"
@@ -13,7 +17,6 @@
         data from {{ cacheAge }} hrs ago
       </v-chip>
 
-      <v-spacer></v-spacer>
       <icons name="refresh" @clicked="refresh" tip="refresh viz" />
       <icons :name="vizInfoIcon" @clicked="flipVizInfo()" :tip="vizInfoTip" />
       <icons :name="filterIcon" @clicked="flipFilterPlus" :tip="filterTip" />
@@ -42,6 +45,10 @@
       <v-card-title>
         <icons name="small-tree" />
         <span class="ml-2">Filters</span>
+        <v-spacer></v-spacer>
+        <v-card-actions>
+          <v-switch v-model="hireables" label="Hireable"></v-switch>
+        </v-card-actions>
       </v-card-title>
 
       <v-card-text>
@@ -49,10 +56,16 @@
         <v-divider></v-divider>
         <repo-filter />
       </v-card-text>
+
       <v-card-title>
         <icons @clicked="flipShowDetail" name="big-tree" />
         <span class="ml-2">Manifest filters</span>
+        <v-spacer></v-spacer>
+        <v-card-actions>
+          <v-switch v-model="interlocked" label="Interlocked"></v-switch>
+        </v-card-actions>
       </v-card-title>
+
       <v-card-text>
         <library-filter />
         <advanced-service-filter />
@@ -62,6 +75,7 @@
         <webapp-filter />
         <data-studio-filter />
         <time-zone-filter />
+        <stats-card v-if="showStats" />
       </v-card-text>
     </v-navigation-drawer>
     <v-main>
@@ -71,6 +85,7 @@
 </template>
 
 <script>
+import statscard from "@/components/statscard";
 import d3chart from "@/components/d3chart";
 import ownerfilter from "@/components/ownerfilter";
 import libraryfilter from "@/components/libraryfilter";
@@ -98,10 +113,36 @@ export default {
     "webapp-filter": webappfilter,
     "data-studio-filter": datastudiofilter,
     "d3-chart": d3chart,
-    icons: icons,
+    "stats-card": statscard,
+    icons,
   },
 
   computed: {
+    viewToggle: {
+      get () {
+        return this.viewToggles.indexOf(this.viewType) 
+      },
+      set (value) {
+        console.log(value)
+        this.setViewType (this.viewToggles[value])
+      }
+    },
+    hireables: {
+      get() {
+        return this.hireableOwners;
+      },
+      set(value) {
+        this.setHireableOwners(value);
+      },
+    },
+    interlocked: {
+      get() {
+        return this.interlockedFilters;
+      },
+      set(value) {
+        this.setInterlockedFilters(value);
+      },
+    },
     vizInfoTip() {
       return this.vizInfo ? "disable viz tips" : "enable viz tips";
     },
@@ -147,7 +188,8 @@ export default {
   },
   data: () => ({
     sidebarMenu: false,
+    showStats: false,
+    viewToggles: ["owners", "libraries"]
   }),
 };
 </script>
-

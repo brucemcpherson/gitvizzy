@@ -17,6 +17,7 @@
     :menu-props="{ closeOnClick: true }"
     :search-input.sync="search"
     @change="search = ''"
+   
   >
     <template v-slot:selection="data">
       <v-chip
