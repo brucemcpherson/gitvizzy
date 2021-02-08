@@ -1,10 +1,6 @@
 const d3 = require("d3");
 import { reduceManifests } from "./filtering";
 
-const idAccessors = {
-  libraries: "libraryId",
-};
-
 const sorter = (items) =>
   items.sort((a, b) => {
     const aName = a.fields.name;
@@ -12,7 +8,13 @@ const sorter = (items) =>
     return aName === bName ? 0 : aName > bName ? 1 : -1;
   });
 
-const manifestChild = ({ manifestType, target, repoName, ownerPic }) => {
+const manifestChild = ({
+  manifestType,
+  target,
+  repoName,
+  ownerPic,
+  skipVersions = false,
+}) => {
   // some manifests are arrays, so are not
   if (!Array.isArray(target)) target = [target];
 
@@ -25,12 +27,18 @@ const manifestChild = ({ manifestType, target, repoName, ownerPic }) => {
       name = g.replace("https://www.googleapis.com/auth/", "");
       list = [g];
     } else if (manifestType === "addOns") {
-      name = Object.keys(g).join(",");
-      list = Object.keys(g);
+      if (g.id) {
+        name = g.id
+        list = [g.id]
+      } else {
+        name = Object.keys(g).join(",");
+        list = Object.keys(g);
+      }
     } else {
       name = g.userSymbol || g.access || g.name;
       list = [g.libraryId || g.serviceId || name];
-      if (g.version) name += `.v${g.version}`.replace(".vv", ".v");
+      if (g.version && !skipVersions)
+        name += `.v${g.version}`.replace(".vv", ".v");
     }
 
     return {
@@ -57,41 +65,18 @@ const manifestChild = ({ manifestType, target, repoName, ownerPic }) => {
   return pack;
 };
 
-const makeManifestChildren = ({ mf, id, repoName, ownerPic }) => {
+const makeManifestChildren = ({ mf, id, repoName, ownerPic, vTypes }) => {
   const manifest = mf.manifests.get(id);
-  const m = [
-    {
-      name: "libraries",
-    },
-    {
-      name: "advancedServices",
-    },
-    {
-      name: "timeZone",
-    },
-    {
-      name: "runtimeVersion",
-    },
-    {
-      name: "webapp",
-    },
-    {
-      name: "addOns",
-    },
-    {
-      name: "oauthScopes",
-    },
-    {
-      name: "dataStudio",
-    },
-  ].map((n) => {
-    // eg libraries
-    const f = n.name;
-    // the values in the manifest for this type
-    let target = manifest[f] || [];
+  const m = vTypes
+    .map((n) => {
+      // eg libraries
+      const f = n.name;
+      // the values in the manifest for this type
+      let target = manifest[f] || [];
 
-    return manifestChild({ manifestType: f, target, repoName, ownerPic });
-  });
+      return manifestChild({ manifestType: f, target, repoName, ownerPic });
+    })
+    .filter((f) => f.children.length || f.childrenCount);
 
   return m;
 };
@@ -123,18 +108,17 @@ export const arrangeTreeData = (state) => {
 
   if (viewType === "owners") {
     const ownerTree = makeOwnerTreeData(state);
-    return ownerTree
-  } else { 
+    return ownerTree;
+  } else {
     const viewTree = makeManifestTreeData(state);
     return viewTree;
   }
-
 };
 
 export const makeOwnerTreeData = (state) => {
   // the objective is to make tree shaped data for d3
   // { name: owner, children: [{ name: repo: children: [{ name: libraries }, { name: advanced services }] }] }
-  const { gd, dob, fob, showDetail } = state;
+  const { gd, dob, fob, showDetail, vTypes } = state;
 
   if (!gd || !state.mf) return null;
 
@@ -154,8 +138,7 @@ export const makeOwnerTreeData = (state) => {
       .allFiltered()
       .filter((d) => reposByOwnerSet.has(dob.owners.accessor(d)))
   );
-  // TODO
-  // can speed this up replacing by maps.
+
   const repos = fob.repos.allFiltered();
   const files = fob.files.allFiltered();
 
@@ -189,6 +172,7 @@ export const makeOwnerTreeData = (state) => {
                     state,
                     repoName: repoOb.fields.name,
                     ownerPic: ownerOb.fields.avatar_url,
+                    vTypes,
                   })
                 : [],
             };
@@ -228,7 +212,7 @@ export const makeOwnerTreeData = (state) => {
 };
 
 export const makeManifestTreeData = (state) => {
-  const { gd, viewType, cfManifests, fob, dob } = state;
+  const { gd, viewType, cfManifests, fob, dob, vTypes, filterPlus } = state;
 
   if (!gd || !state.mf) return null;
 
@@ -240,6 +224,7 @@ export const makeManifestTreeData = (state) => {
 
   // use this as the base manifest type
   const base = cfManifests.allFiltered();
+
   // a map will make this easier to reference later
   const shaMap = fob.files.allFiltered().reduce((p, c) => {
     const sha = dob.filesBySha.accessor(c);
@@ -252,47 +237,79 @@ export const makeManifestTreeData = (state) => {
     return p;
   }, new Map());
 
-  const repoMap = new Map(
-    fob.repos.allFiltered().map((f) => [dob.repos.accessor(f), f])
-  );
-  const ownerMap = new Map(
-    fob.owners.allFiltered().map((f) => [dob.owners.accessor(f), f])
-  );
+  const { idAccessor, filterName , objectKeys} = vTypes.find((f) => viewType === f.name);
+  const filterOb = state[filterName];
 
   // now create a tree with that as the base
-  const t = base
-    .filter((f) => f[viewType] && f[viewType].length)
-    .reduce((p, viewItem) => {
-      // by the time we get here, we are only seeing filtered manifests
-      // so confident that view Item is a manifest featuring the viewtype
-      // that is to be the root of the viz.
-      // but we need to blow that out to 1 per item
-      const a = Array.isArray(viewItem[viewType])
-        ? viewItem[viewType]
-        : [viewItem[viewType]];
 
+  const t = base
+    .filter(
+      (f) =>
+        f[viewType] &&
+        ((typeof f[viewType] === 'object' && Object.keys(f[viewType]).length) ||
+          f[viewType].length)
+    )
+    .reduce((p, viewItem) => {
+
+      // this will give something like the array of libraries in this manifest
+      let a = objectKeys ? Object.keys(viewItem[viewType]).map(k => { 
+        return {
+          ...viewItem[viewType][k],
+          id: k
+        }
+      }): (Array.isArray(viewItem[viewType])
+        ? viewItem[viewType]
+        : [viewItem[viewType]]);
+      
+      
       a.forEach((g) => {
-        const id = g[idAccessors[viewType]];
-        if (!p.has(id)) {
-          p.set(id, {
-            items: [],
-            id,
-            item: g,
+        // each viewtype  has a different style of id
+        const id = idAccessor ? g[idAccessor] : g;
+        if (!id) {
+          console.log(idAccessor, viewType, g);
+          throw new Error("couldnt find id for", idAccessor, g);
+        }
+        // this is organizing the qhole structure by selected viewtype
+        // need to dump the parts of the manifest that are not required
+        // because they weren't part of the filtering
+        // TODO - there might be a good option for leaving them in
+        // that would should related libraries for example as well as selected ones
+        // by default we'll tkae them out
+
+        if (!filterPlus || !filterOb.length || filterOb.indexOf(id) !== -1) {
+          if (!p.has(id)) {
+            p.set(id, {
+              items: [],
+              id,
+              item: g,
+            });
+          }
+          // just pile it all on - we'll need all this to sort it out late
+          p.get(id).items.push({
+            variant: g,
+            viewItem,
           });
         }
-        p.get(id).items.push({
-          viewItem,
-          variant: g,
-        });
       });
+
       return p;
     }, new Map());
 
+  // now we have the whole thing arranged by viewtype
+  // need to create a tree based on that and dispose of irrelevant thing
   const viewFiles = Array.from(t.values()).map((value) => {
-    // each item is a child
+    // borrow the code for making a child from the regular owner shaped tree
+    // it'll only return 1 child
+    const cl = manifestChild({
+      manifestType: viewType,
+      target: value.item,
+      skipVersions: true,
+    }).children;
+    if (cl.length !== 1) {
+      throw new Error("should hav returned a child for ", value.item);
+    }
+    const cld = cl[0];
 
-    const cld = manifestChild({ manifestType: viewType, target: value.item })
-      .children[0];
     return {
       name: cld.name,
       // TODO the versions need to be updated using the variants and the names too
@@ -302,11 +319,12 @@ export const makeManifestTreeData = (state) => {
       type: cld.type,
       children: value.items.reduce((p, f) => {
         // all the files that match this sha
+
         const sha = f.viewItem.id;
-        return p.concat(
+        const pc = p.concat(
           shaMap.get(sha).files.map((file) => {
-            const repo = repoMap.get(dob.filesByRepo.accessor(file));
-            const owner = ownerMap.get(dob.reposByOwner.accessor(file));
+            const repo = gd.repos.get(dob.filesByRepo.accessor(file));
+            const owner = gd.owners.get(dob.reposByOwner.accessor(file));
             const id = dob.files.accessor(file);
             const manifest = mf.manifests.get(sha);
             const { path: fp } = file.fields;
@@ -341,6 +359,8 @@ export const makeManifestTreeData = (state) => {
             };
           })
         );
+
+        return pc;
       }, []),
     };
   }, []);
@@ -348,12 +368,12 @@ export const makeManifestTreeData = (state) => {
   return {
     name: viewType,
     children: viewFiles,
-    type: "root"
-  }
+    type: "root",
+  };
 };
 export const tree = ({ data, width }) => {
   if (!data || !width) return null;
-  console.log(data)
+ 
   const root = d3.hierarchy(data);
   root.dx = 10;
   root.dy = width / (root.height + 1);

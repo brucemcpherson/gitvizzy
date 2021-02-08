@@ -4,6 +4,51 @@ import { applyFilters } from "./filtering";
 import { tree, arrangeTreeData } from "./d3prep";
 
 
+const vTypes = [
+  {
+    name: "libraries",
+    idAccessor: "libraryId",
+    filterName: "libraryFilter",
+  },
+  {
+    name: "advancedServices",
+    idAccessor: "serviceId",
+    filterName: "advancedServiceFilter",
+  },
+
+  {
+    name: "oauthScopes",
+    idAccessor: "",
+    filterName: "oauthScopeFilter",
+  },
+  {
+    name: "addOns",
+    idAccessor: "id",
+    filterName: "addOnFilter",
+    objectKeys: true,
+  },
+  {
+    name: "runtimeVersion",
+    idAccessor: "",
+    filterName: "runtimeVersionFilter",
+  },
+  {
+    name: "webapp",
+    idAccessor: "access",
+    filterName: "webappFilter",
+  },
+  {
+    name: "dataStudio",
+    idAccessor: "name",
+    filterName: "dataStudioFilter",
+  },
+  {
+    name: "timeZone",
+    idAccessor: "",
+    filterName: "timeZoneFilter",
+  },
+];
+
 const _initial = {
   state: {
     gd: null,
@@ -44,6 +89,7 @@ const _initial = {
       dotChildren: "lime",
       dotNoChildren: "pink",
     },
+    vTypes
   },
   mutations: {
     setVizInfo(state, value) {
@@ -138,6 +184,9 @@ const _initial = {
     fobOwners(state) {
       return state.fob && state.fob.owners && state.fob.owners.allFiltered();
     },
+    leaves(state) { 
+      return (state.root && state.root.leaves().length) || null;
+    }
   },
   actions: {
     vizzyInit({ commit, dispatch }) {

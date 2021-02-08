@@ -4,17 +4,17 @@
       <v-app-bar-nav-icon @click.stop="flipSidebar"></v-app-bar-nav-icon>
       <v-toolbar-title>View vizzy by</v-toolbar-title>
       <v-btn-toggle v-model="viewToggle" mandatory group dark>
-        <v-btn v-for="vt in viewToggles" :key="vt"><icons :name="vt"/></v-btn>
+        <v-btn v-for="vt in viewToggles" :key="vt"
+          ><icons :name="vt" :tip="vt"
+        /></v-btn>
       </v-btn-toggle>
+      <v-chip v-if="leaves" color="accent" class="ml-2 mr-2">
+        <span class="mr-1">{{ leaves }} nodes</span>
+      </v-chip>
       <v-spacer></v-spacer>
-      <v-progress-circular
-        indeterminate
-        v-if="making"
-        :color="colors.spinner"
-        class="ml-2"
-      ></v-progress-circular>
-      <v-chip v-if="cacheAge" color="accent" class="ml-2">
-        data from {{ cacheAge }} hrs ago
+
+      <v-chip v-if="cacheAge" color="accent" class="ml-2 mr-2">
+        <span class="mr-1">data from {{ cacheAge }} hrs ago</span>
       </v-chip>
 
       <icons name="refresh" @clicked="refresh" tip="refresh viz" />
@@ -77,6 +77,9 @@
         <time-zone-filter />
         <stats-card v-if="showStats" />
       </v-card-text>
+      <v-overlay :value="making">
+        <v-progress-circular indeterminate size="64"></v-progress-circular>
+      </v-overlay>
     </v-navigation-drawer>
     <v-main>
       <d3-chart />
@@ -119,13 +122,12 @@ export default {
 
   computed: {
     viewToggle: {
-      get () {
-        return this.viewToggles.indexOf(this.viewType) 
+      get() {
+        return this.viewToggles.indexOf(this.viewType);
       },
-      set (value) {
-        console.log(value)
-        this.setViewType (this.viewToggles[value])
-      }
+      set(value) {
+        this.setViewType(this.viewToggles[value]);
+      },
     },
     hireables: {
       get() {
@@ -172,7 +174,11 @@ export default {
           ).toFixed(2)}`
         : "";
     },
+    viewToggles() {
+      return ["owners"].concat(this.vTypes.map((f) => f.name));
+    },
     ...maps.state,
+    ...maps.getters,
   },
   methods: {
     flipSidebar() {
@@ -189,7 +195,6 @@ export default {
   data: () => ({
     sidebarMenu: false,
     showStats: false,
-    viewToggles: ["owners", "libraries"]
   }),
 };
 </script>

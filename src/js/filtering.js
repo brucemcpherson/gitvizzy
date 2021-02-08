@@ -9,8 +9,9 @@ const reduceRepos = ({ fob, dob, filters, filterPlus }) => {
         .map(dob.owners.accessor)
         .filter((f) => filters.owners.has(f))
     );
+   
     dob.reposByOwner.filter((d) => o.has(d));
-  }
+  } 
 };
 
 export const remakeMf = (state) => {

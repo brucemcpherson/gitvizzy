@@ -1,5 +1,8 @@
 <template>
   <v-container>
+    <v-overlay :value="making">
+      <v-progress-circular indeterminate size="64"></v-progress-circular>
+    </v-overlay>
     <div id="tidy-tree" style="width:100%;" v-resize="resize"></div>
     <div v-if="root">
       <div v-if="sv" id="node-info" style="position:absolute">
@@ -84,9 +87,7 @@
               v-else-if="isAddOn"
               :listColor="colors.info"
             />
-            <div v-else-if="isRoot">
-              {{viewType}} tree starts here
-            </div>
+            <div v-else-if="isRoot">Viewing by {{ viewType }}</div>
           </v-card-text>
         </v-card>
       </div>
@@ -307,7 +308,6 @@ export default {
       return this.isOwner && this.fields.avatar_url;
     },
     infoName() {
-      
       if (this.isRepo) {
         return this.fields.name;
       } else if (this.isOwner) {
@@ -316,7 +316,7 @@ export default {
         return this.infoData.name;
       } else if (this.isManifestParent) {
         return this.type;
-      } else if (this.isManifestEntry ) {
+      } else if (this.isManifestEntry) {
         return this.infoData && this.infoData.name;
       } else if (this.isRoot) {
         return "root";
@@ -334,7 +334,7 @@ export default {
       return this.infoData && this.infoData.type;
     },
     isRoot() {
-      console.log(this.type)
+      console.log(this.type);
       return this.type === "root";
     },
     isRepo() {
@@ -347,7 +347,7 @@ export default {
       return this.type === "files";
     },
     isManifestParent() {
-      return this.infoChildrenName === "entries" && !this.isRoot
+      return this.infoChildrenName === "entries" && !this.isRoot;
     },
     manifestParent() {
       return this.isManifestParent && this.infoData && this.infoData.target;
