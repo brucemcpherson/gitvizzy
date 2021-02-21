@@ -5,24 +5,19 @@
     </v-overlay>
     <div id="tidy-tree" style="width:100%;" v-resize="resize"></div>
     <div v-if="root">
-      <div v-if="sv" id="node-info" style="position:absolute">
+      <div v-if="sv" ref="node-info" style="position:absolute">
         <v-card :color="colors.info" dark>
           <v-toolbar color="secondary">
-            <v-chip label v-if="repoName" color="accent">
-              <v-avatar small v-if="ownerPic"><img :src="ownerPic"/></v-avatar>
-              <icons v-else name="repos" />
-              <span class="caption ml-2">{{ repoName }}</span>
-            </v-chip>
+            <repo-chip :repoName="repoName" :ownerPic="ownerPic" />
             <v-spacer v-if="repoName"></v-spacer>
-            <div :class="`caption${repoName ? ' pl-2' : ''}`">
-              <v-avatar small v-if="pic"><img :src="pic"/></v-avatar>
-              <icons v-else :name="iconType" />
-              <span class="ml-1">{{ infoName }}</span>
-              <span class="ml-1" v-if="infoChildrenCount"
-                >({{ infoChildrenCount
-                }}<span class="ml-1">{{ infoChildrenName }})</span></span
-              >
-            </div>
+            <repo-info-chip
+              :repoName="repoName"
+              :pic="pic"
+              :infoName="infoName"
+              :infoChildrenCount="infoChildrenCount"
+              :infoChildrenName="infoChildrenName"
+              :iconType="iconType"
+            />
           </v-toolbar>
           <v-card-text>
             <owner-card
@@ -40,6 +35,14 @@
               v-else-if="isFile"
               :listColor="colors.info"
               :manifest="manifest"
+              :repoName="repoName"
+              :repoUrl="repoUrl"
+              :pic="pic"
+              :infoName="infoName"
+              :infoChildrenCount="infoChildrenCount"
+              :infoChildrenName="infoChildrenName"
+              :iconType="iconType"
+              :ownerPic="ownerPic"
             />
             <manifest-parent-card
               :fields="fields"
@@ -97,7 +100,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-import icons from "@/components/icons";
+
 import ownercard from "@/components/ownercard";
 import repocard from "@/components/repocard";
 import filecard from "@/components/filecard";
@@ -110,13 +113,16 @@ import runtimeversioncard from "@/components/runtimeversioncard";
 import timezonecard from "@/components/timezonecard";
 import webappcard from "@/components/webappcard";
 import addoncard from "@/components/addoncard";
+import repochip from "@/components/repochip";
+import repoinfochip from "@/components/repoinfochip";
 import { delayAnimation } from "@/js/fiddly";
 
 import * as d3 from "d3";
 
 export default {
   components: {
-    icons,
+    "repo-chip": repochip,
+    "repo-info-chip": repoinfochip,
     "advanced-service-card": advancedservicecard,
     "owner-card": ownercard,
     "repo-card": repocard,
@@ -158,35 +164,62 @@ export default {
   methods: {
     resize() {
       const sel = d3.select("#tidy-tree");
-      const b = sel.node().getBoundingClientRect();
-      this.setWidth(b.width);
+      if (sel.node()) {
+        const b = sel.node().getBoundingClientRect();
+        this.setWidth(b.width);
+      }
     },
-    handleMouseOut() {
+    handleMouseOut(d3This) {
       // nothing to do here that works
+      // d3This is the 'this
+      const dt = d3.select(d3This);
+
+      // emphasise the node hovered
+      dt.style("fill", this.colors.vizText)
+        .style("font-weight", "normal")
+        .style("font-size", "1em");
     },
-    handleMouseOver(e, n) {
-      // these are the dimensions of the svg area
-      this.setInfoMoused(true);
+    handleMouseOver(d3This, e, n) {
+      if (!this.svg && !this.svg.node()) return null;
       const svgDim = this.svg.node().getBoundingClientRect();
-      const left = e.clientX - svgDim.x;
-      const top = e.clientY - svgDim.y;
 
+      // this is what will be displayed in the info data
       this.setInfoData(n.data);
-      this.$nextTick(() => {
-        const s = d3.select("#node-info");
-        const n = s.node();
-        const { width } = n.getBoundingClientRect();
-        // want to position it so its all on the screen slight left and down
-        // it must be at least width from the right border and >0
-        const adjustLeft = Math.max(
-          10,
-          Math.min(svgDim.width - width - 10, left - 10)
-        );
+      this.setInfoMoused(true);
 
-        s.transition()
-          .duration(200)
-          .style("left", adjustLeft + "px")
-          .style("top", top + 24 + "px");
+      // d3This is the 'this
+      const dt = d3.select(d3This);
+
+      // emphasise the node hovered
+      dt.style("fill", this.colors.vizTextHovered)
+        .style("font-weight", "bold")
+        .style("font-size", "1.5em");
+
+      // let that settle so we can get the dimensions
+      // if you do it now then the info fiv wont have been settled
+      this.$nextTick(() => {
+        // get the kind of alignment and size of text
+        //const textLength = dt.node().getComputedTextLength();
+
+        // these are the dimensions of the svg area
+        const left = e.clientX - svgDim.x;
+        const top = e.clientY - svgDim.y;
+        const tn = this.$refs["node-info"];
+        const s = d3.select(tn);
+
+        if (tn) {
+          const svgDim = this.svg.node().getBoundingClientRect();
+          const { width } = tn.getBoundingClientRect();
+
+          const adjustLeft = Math.min(
+            left - 10,
+            svgDim.width - width - 10 
+          );
+          s.transition()
+            .duration(300)
+            .style("left", adjustLeft + "px")
+            .style("top", top + 26 + "px");
+        }
       });
     },
     async rebuild() {
@@ -243,12 +276,18 @@ export default {
 
         // the purpose of these delays is to get some of the dom updated at least
         // as the whole thing looks like it's not doing anything
+        const self = this;
         await delayAnimation(0, () => {
           node.selectAll("text").remove();
           node
             .append("text")
-            .on("mouseover", this.handleMouseOver)
-            .on("mouseout", this.handleMouseOut)
+            .on("mouseover", function(e, n) {
+              self.handleMouseOver(this, e, n);
+            })
+            .on("mouseout", function(e, n) {
+              self.handleMouseOut(this, e, n);
+            })
+            .style("fill", this.colors.vizText)
             .attr("dy", "0.31em")
             .attr("x", (d) => (d.children ? -6 : 6))
             .attr("text-anchor", (d) => (d.children ? "end" : "start"))
@@ -285,27 +324,28 @@ export default {
     },
     infoChildrenName() {
       if (this.isFile) {
-        return this.infoChildrenCount && "entries";
+        return (this.infoChildrenCount && "entries") || null;
       }
       const n =
         (this.infoData && this.infoData.childrenType) ||
         (this.infoChildrenCount && this.infoData.children[0].type);
 
-      return n;
+      return n || null;
     },
     infoChildrenCount() {
       // if we're not showing detail, the children will be suppressed, but we still have the count
       return (
-        this.infoData &&
-        this.infoData.children &&
-        (this.infoData.children.length || this.infoData.childrenCount)
+        (this.infoData &&
+          this.infoData.children &&
+          (this.infoData.children.length || this.infoData.childrenCount)) ||
+        null
       );
     },
     ownerPic() {
-      return this.infoData && this.infoData.ownerPic;
+      return (this.infoData && this.infoData.ownerPic) || null;
     },
     pic() {
-      return this.isOwner && this.fields.avatar_url;
+      return (this.isOwner && this.fields.avatar_url) || null;
     },
     infoName() {
       if (this.isRepo) {
@@ -324,6 +364,9 @@ export default {
         return null;
       }
     },
+    repoUrl() {
+      return this.infoData && this.infoData.repoUrl;
+    },
     repoName() {
       return this.infoData && this.infoData.repoName;
     },
@@ -334,7 +377,6 @@ export default {
       return this.infoData && this.infoData.type;
     },
     isRoot() {
-      console.log(this.type);
       return this.type === "root";
     },
     isRepo() {

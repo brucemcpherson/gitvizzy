@@ -1,6 +1,6 @@
 {
   "name": "gitvizzy",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "private": false,
   "repository": {
     "url": "https://github.com/brucemcpherson/gitvizzy"
@@ -11,6 +11,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@octokit/rest": "^18.2.0",
     "anchorme": "^2.1.2",
     "core-js": "^3.6.5",
     "crossfilter2": "^1.5.4",

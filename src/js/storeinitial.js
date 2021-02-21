@@ -1,8 +1,7 @@
 import { gasVizzyInit, delay } from "./gasvizzy";
-import { logEvent } from "./fb";
+import { logEvent, getPickerKey, signin, signinGithub } from "./fb";
 import { applyFilters } from "./filtering";
 import { tree, arrangeTreeData } from "./d3prep";
-
 
 const vTypes = [
   {
@@ -51,6 +50,11 @@ const vTypes = [
 
 const _initial = {
   state: {
+    pickerKey: getPickerKey(),
+    gitHubToken: null,
+    googleToken: null,
+    showPullDialog: false,
+    user: null,
     gd: null,
     mf: null,
     cfManifests: null,
@@ -88,10 +92,34 @@ const _initial = {
       info: "pink",
       dotChildren: "lime",
       dotNoChildren: "pink",
+      vizTextHovered: "#C2185B",
+      vizText: "#212121",
     },
-    vTypes
+    vTypes,
   },
   mutations: {
+    clearTokens(state) {
+      state.githubToken = null;
+      state.googleToken = null;
+    },
+    setGithubToken(state, value) {
+      state.githubToken = value;
+    },
+    setGoogleToken(state, value) {
+      state.googleToken = value;
+    },
+    setPickerApiKey(state, value) {
+      state.pickerApiKey = value;
+    },
+    flipPullDialog(state) {
+      state.showPullDialog = !state.showPullDialog;
+    },
+    setPullDialog(state, value) {
+      state.showPullDialog = value;
+    },
+    setUser(state, value) {
+      state.user = value;
+    },
     setVizInfo(state, value) {
       state.vizInfo = value;
     },
@@ -181,14 +209,36 @@ const _initial = {
     },
   },
   getters: {
+    pickerKey() {
+      return getPickerKey();
+    },
+    isLoggedIn(state) {
+      return Boolean(state.user);
+    },
+    userImage(state, getters) {
+      return getters.isLoggedIn ? state.user.photoURL : null;
+    },
+    userName(state, getters) {
+      return getters.isLoggedIn ? state.user.displayName : null;
+    },
     fobOwners(state) {
       return state.fob && state.fob.owners && state.fob.owners.allFiltered();
     },
-    leaves(state) { 
+    leaves(state) {
       return (state.root && state.root.leaves().length) || null;
-    }
+    },
   },
   actions: {
+    signin() {
+      return signin();
+    },
+    signinGithub() {
+      return signinGithub();
+    },
+    newUser({ commit }, value) {
+      return commit("setUser", value);
+    },
+
     vizzyInit({ commit, dispatch }) {
       commit("setMaking", true);
       return gasVizzyInit().then(({ gd, mf, timestamp, dob, fob }) => {
@@ -217,7 +267,7 @@ const _initial = {
       dispatch("updateRoot");
     },
     setViewType({ dispatch, commit }, value) {
-      console.log('setting viewtype', value)
+      
       commit("_viewType", value);
       logEvent("filter", {
         name: "viewType",
@@ -328,6 +378,19 @@ const _initial = {
         name: "vizInfo",
         value: state.vizInfo,
       });
+    },
+    gapi() {
+      // eslint-disable-next-line no-undef
+      gapi.load("picker", () => {
+        console.log("gapi picker loaded");
+      });
+    },
+    pickerStuff({ state }, store) {
+      // TODO - what if token is expired?
+      return state.googleToken ? Promise.resolve() : signin(store);
+    },
+    githubStuff({ state }, store) {
+      if (!state.githubToken) signinGithub(store);
     },
     updateRoot({ commit, state }, force) {
       // this allows re-render of whatever to show before waiting

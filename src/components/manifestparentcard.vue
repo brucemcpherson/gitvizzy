@@ -7,7 +7,7 @@
 export default {
   props: {
     manifest: Array,
-  }
+  },
 };
 </script>
 <style scoped>

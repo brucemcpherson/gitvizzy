@@ -5,22 +5,45 @@
       <v-toolbar-title>View vizzy by</v-toolbar-title>
       <v-btn-toggle v-model="viewToggle" mandatory group dark>
         <v-btn v-for="vt in viewToggles" :key="vt"
-          ><icons :name="vt" :tip="vt"
+          ><icons :name="vt" :tip="vt" unmouse
         /></v-btn>
       </v-btn-toggle>
-      <v-chip v-if="leaves" color="accent" class="ml-2 mr-2">
-        <span class="mr-1">{{ leaves }} nodes</span>
-      </v-chip>
+
       <v-spacer></v-spacer>
 
-      <v-chip v-if="cacheAge" color="accent" class="ml-2 mr-2">
-        <span class="mr-1">data from {{ cacheAge }} hrs ago</span>
-      </v-chip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-chip v-on="on" color="accent" class="ml-2 mr-2">
+            <span class="mr-1" v-if="leaves">{{ leaves }} nodes</span>
+          </v-chip>
+        </template>
+        <span class="caption">data is {{ cacheAge }} hrs old</span>
+      </v-tooltip>
 
-      <icons name="refresh" @clicked="refresh" tip="refresh viz" />
-      <icons :name="vizInfoIcon" @clicked="flipVizInfo()" :tip="vizInfoTip" />
-      <icons :name="filterIcon" @clicked="flipFilterPlus" :tip="filterTip" />
-      <icons :name="detailIcon" @clicked="flipShowDetail" :tip="detailTip" />
+      <icons name="refresh" @clicked="refresh" tip="refresh viz" unmouse />
+      <icons
+        :name="vizInfoIcon"
+        @clicked="flipVizInfo()"
+        :tip="vizInfoTip"
+        unmouse
+      />
+      <icons
+        :name="filterIcon"
+        @clicked="flipFilterPlus"
+        :tip="filterTip"
+        unmouse
+      />
+      <icons
+        :name="detailIcon"
+        @clicked="flipShowDetail"
+        :tip="detailTip"
+        unmouse
+      />
+
+
+      <span class="ml-2">
+        <login-chip />
+      </span>
     </v-app-bar>
 
     <v-navigation-drawer
@@ -32,7 +55,7 @@
       <v-list dense color="primary" dark>
         <v-list-item>
           <v-list-item-action>
-            <icons name="close-left" @clicked="flipSidebar" />
+            <icons name="close-left" @clicked="flipSidebar" unmouse />
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title>
@@ -101,8 +124,10 @@ import timezonefilter from "@/components/timezonefilter";
 import webappfilter from "@/components/webappfilter";
 import datastudiofilter from "@/components/datastudiofilter";
 import icons from "@/components/icons";
-
+import loginchip from "@/components/loginchip";
 import maps from "@/js/storemaps";
+
+
 export default {
   components: {
     "owner-filter": ownerfilter,
@@ -117,6 +142,7 @@ export default {
     "data-studio-filter": datastudiofilter,
     "d3-chart": d3chart,
     "stats-card": statscard,
+    "login-chip": loginchip,
     icons,
   },
 
@@ -183,8 +209,6 @@ export default {
   methods: {
     flipSidebar() {
       this.sidebarMenu = !this.sidebarMenu;
-      // clear any info screens
-      this.setInfoMoused(false);
     },
     refresh() {
       this.updateRoot(true);
@@ -194,7 +218,7 @@ export default {
   },
   data: () => ({
     sidebarMenu: false,
-    showStats: false,
+    showStats: false
   }),
 };
 </script>

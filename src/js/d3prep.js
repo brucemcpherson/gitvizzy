@@ -12,6 +12,7 @@ const manifestChild = ({
   manifestType,
   target,
   repoName,
+  repoUrl,
   ownerPic,
   skipVersions = false,
 }) => {
@@ -28,8 +29,8 @@ const manifestChild = ({
       list = [g];
     } else if (manifestType === "addOns") {
       if (g.id) {
-        name = g.id
-        list = [g.id]
+        name = g.id;
+        list = [g.id];
       } else {
         name = Object.keys(g).join(",");
         list = Object.keys(g);
@@ -50,6 +51,7 @@ const manifestChild = ({
       type: "entries",
       manifestType,
       repoName,
+      repoUrl,
       ownerPic,
     };
   });
@@ -60,13 +62,23 @@ const manifestChild = ({
     target,
     type: manifestType,
     repoName,
+    repoUrl,
+    ownerPic,
   };
 
   return pack;
 };
 
-const makeManifestChildren = ({ mf, id, repoName, ownerPic, vTypes }) => {
+const makeManifestChildren = ({
+  mf,
+  id,
+  repoName,
+  ownerPic,
+  vTypes,
+  repoUrl,
+}) => {
   const manifest = mf.manifests.get(id);
+
   const m = vTypes
     .map((n) => {
       // eg libraries
@@ -74,7 +86,14 @@ const makeManifestChildren = ({ mf, id, repoName, ownerPic, vTypes }) => {
       // the values in the manifest for this type
       let target = manifest[f] || [];
 
-      return manifestChild({ manifestType: f, target, repoName, ownerPic });
+      return manifestChild({
+        manifestType: f,
+        target,
+        repoName,
+
+        ownerPic,
+        repoUrl,
+      });
     })
     .filter((f) => f.children.length || f.childrenCount);
 
@@ -158,6 +177,7 @@ export const makeOwnerTreeData = (state) => {
             return {
               ownerPic: ownerOb.fields.avatar_url,
               repoName: repoOb.fields.name,
+              repoUrl: repoOb.fields.url,
               name: fp,
               manifest,
               id,
@@ -171,6 +191,7 @@ export const makeOwnerTreeData = (state) => {
                     id: fileOb.fields.sha,
                     state,
                     repoName: repoOb.fields.name,
+                    repoUrl: repoOb.fields.url,
                     ownerPic: ownerOb.fields.avatar_url,
                     vTypes,
                   })
@@ -182,6 +203,7 @@ export const makeOwnerTreeData = (state) => {
           childrenCount: children.length,
           ownerPic: ownerOb.fields.avatar_url,
           repoName: repoOb.fields.name,
+          repoUrl: repoOb.fields.url,
           repo: repoOb,
           name: repoOb.fields.name,
           type: "repos",
@@ -202,7 +224,6 @@ export const makeOwnerTreeData = (state) => {
     (p, c) => {
       const ownerChildren = getOwnerAndChildren({ ownerOb: c });
       p.children.push(ownerChildren);
-
       return p;
     },
     { name: "owners", children: [], type: "root" }
@@ -237,7 +258,9 @@ export const makeManifestTreeData = (state) => {
     return p;
   }, new Map());
 
-  const { idAccessor, filterName , objectKeys} = vTypes.find((f) => viewType === f.name);
+  const { idAccessor, filterName, objectKeys } = vTypes.find(
+    (f) => viewType === f.name
+  );
   const filterOb = state[filterName];
 
   // now create a tree with that as the base
@@ -246,22 +269,22 @@ export const makeManifestTreeData = (state) => {
     .filter(
       (f) =>
         f[viewType] &&
-        ((typeof f[viewType] === 'object' && Object.keys(f[viewType]).length) ||
+        ((typeof f[viewType] === "object" && Object.keys(f[viewType]).length) ||
           f[viewType].length)
     )
     .reduce((p, viewItem) => {
-
       // this will give something like the array of libraries in this manifest
-      let a = objectKeys ? Object.keys(viewItem[viewType]).map(k => { 
-        return {
-          ...viewItem[viewType][k],
-          id: k
-        }
-      }): (Array.isArray(viewItem[viewType])
+      let a = objectKeys
+        ? Object.keys(viewItem[viewType]).map((k) => {
+            return {
+              ...viewItem[viewType][k],
+              id: k,
+            };
+          })
+        : Array.isArray(viewItem[viewType])
         ? viewItem[viewType]
-        : [viewItem[viewType]]);
-      
-      
+        : [viewItem[viewType]];
+
       a.forEach((g) => {
         // each viewtype  has a different style of id
         const id = idAccessor ? g[idAccessor] : g;
@@ -331,6 +354,7 @@ export const makeManifestTreeData = (state) => {
             return {
               ownerPic: owner.fields.avatar_url,
               repoName: repo.fields.name,
+              repoUrl: repo.fields.url,
               name: fp,
               manifest,
               id,
@@ -341,6 +365,7 @@ export const makeManifestTreeData = (state) => {
                   ownerPic: owner.fields.avatar_url,
                   childrenCount: 1,
                   repoName: repo.fields.name,
+                  repoUrl: repo.fields.url,
                   repo,
                   name: repo.fields.name,
                   type: "repos",
@@ -373,7 +398,7 @@ export const makeManifestTreeData = (state) => {
 };
 export const tree = ({ data, width }) => {
   if (!data || !width) return null;
- 
+
   const root = d3.hierarchy(data);
   root.dx = 10;
   root.dy = width / (root.height + 1);

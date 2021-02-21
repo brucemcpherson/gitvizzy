@@ -1,9 +1,12 @@
 <template>
   <v-tooltip :disabled="tipDisabled" bottom>
     <template v-slot:activator="{ on, attrs }">
-      <span v-bind="attrs" v-on="on">
+      <span v-bind="attrs" v-on="on" @mouseenter="tipping">
+        <v-avatar size="24" :tile="tile" v-if="!!url" @click="emit()">
+          <img :src="url" />
+        </v-avatar>
         <v-icon
-          v-if="name === 'big-tree'"
+          v-else-if="name === 'big-tree'"
           @click="emit()"
           class="mdi-rotate-270"
           :color="colors.bigTree"
@@ -67,6 +70,7 @@
           >mdi-account-convert</v-icon
         >
         <v-icon v-else-if="name === 'addOns'" @click="emit()">mdi-cloud</v-icon>
+        <v-icon v-else-if="name === 'close'" @click="emit()">mdi-close</v-icon>
         <v-icon v-else-if="name === 'close-left'" @click="emit()"
           >mdi-chevron-left</v-icon
         >
@@ -121,6 +125,23 @@
         <v-icon v-else-if="name === 'id'" @click="emit()"
           >mdi-identifier</v-icon
         >
+        <v-icon v-else-if="name === 'auth'" @click="emit()"
+          >mdi-lock-plus</v-icon
+        >
+        <v-icon v-else-if="name === 'login'" @click="emit()">mdi-login</v-icon>
+        <v-avatar
+          size="24"
+          :tile="tile"
+          v-else-if="name === 'appsscript'"
+          @click="emit()"
+        >
+          <img src="../assets/appsscript.png" />
+        </v-avatar>
+        <v-avatar size="24" tile v-else-if="name === 'drive'" @click="emit()">
+          <img src="../assets/GoogleDrive_2020.png" />
+        </v-avatar>
+        <v-icon v-else-if="name === 'html'" @click="emit()">mdi-language-html5</v-icon>
+        <v-icon v-else-if="name === 'json'" @click="emit()">mdi-code-json"</v-icon>
       </span>
     </template>
     <span>
@@ -136,16 +157,26 @@ export default {
     tipDisabled() {
       return !this.tip;
     },
+    tile() {
+      return !this.avatar;
+    },
     ...maps.state,
   },
   methods: {
     emit() {
       this.$emit("clicked", this.name);
     },
+    tipping() {
+      if (this.unmouse) this.setInfoMoused(false);
+    },
+    ...maps.mutations,
   },
   props: {
     name: String,
     tip: String,
+    unmouse: Boolean,
+    url: String,
+    avatar: Boolean,
   },
 };
 </script>
