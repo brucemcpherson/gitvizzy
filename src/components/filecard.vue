@@ -129,7 +129,7 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-icon>
-            <icons name="appsscript" @clicked="flipPullDialog" />
+            <icons name="appsscript" @clicked="pullPin()" />
           </v-list-item-icon>
           <v-list-item-content>
             Select repo files and configure Apps Script project
@@ -137,7 +137,7 @@
           <v-list-item-action
             ><v-btn
               color="accent"
-              @click="flipPullDialog"
+              @click="pullPin()"
               :disabled="showPullDialog || !isAuthorized"
               >Configure</v-btn
             ></v-list-item-action
@@ -183,7 +183,12 @@ export default {
     };
   },
   methods: {
+    pullPin () {
+      this.$emit('pin')
+      this.flipPullDialog()
+    },
     doAuth() {
+      this.$emit('pin')
       this.pickerStuff(this.$store);
     },
     clipText(value) {

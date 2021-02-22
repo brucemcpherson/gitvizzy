@@ -18,6 +18,19 @@
               :infoChildrenName="infoChildrenName"
               :iconType="iconType"
             />
+            <v-spacer></v-spacer>
+            <icons
+              v-if="pinned"
+              name="unpin"
+              @clicked="pinner()"
+              :tip="`unpin ${infoName}`"
+            />
+            <icons
+              v-else
+              name="pin"
+              @clicked="pinner()"
+              :tip="`pin ${infoName}`"
+            />
           </v-toolbar>
           <v-card-text>
             <owner-card
@@ -43,6 +56,7 @@
               :infoChildrenName="infoChildrenName"
               :iconType="iconType"
               :ownerPic="ownerPic"
+              @pin="pinner(true)"
             />
             <manifest-parent-card
               :fields="fields"
@@ -115,6 +129,7 @@ import webappcard from "@/components/webappcard";
 import addoncard from "@/components/addoncard";
 import repochip from "@/components/repochip";
 import repoinfochip from "@/components/repoinfochip";
+import icons from "@/components/icons";
 import { delayAnimation } from "@/js/fiddly";
 
 import * as d3 from "d3";
@@ -135,6 +150,7 @@ export default {
     "time-zone-card": timezonecard,
     "webapp-card": webappcard,
     "add-on-card": addoncard,
+    icons,
   },
   name: "d3chart",
   watch: {
@@ -162,12 +178,22 @@ export default {
       .attr("stroke-width", 3);
   },
   methods: {
-    resize() {
+    pinner(force) {
+      this.setPinned(this.pinned && !force ? null : this.infoData);
+    },
+    getPal() {
       const sel = d3.select("#tidy-tree");
       if (sel.node()) {
-        const b = sel.node().getBoundingClientRect();
-        this.setWidth(b.width);
+        return sel.node().getBoundingClientRect();
       }
+    },
+    getPalWidth() {
+      const pal = this.getPal();
+      return pal && pal.width;
+    },
+    resize() {
+      const width = this.getPalWidth();
+      if (width) this.setWidth(width);
     },
     handleMouseOut(d3This) {
       // nothing to do here that works
@@ -179,8 +205,17 @@ export default {
         .style("font-weight", "normal")
         .style("font-size", "1em");
     },
+    handleMouseClick() {
+      if (!this.svg && !this.svg.node()) return null;
+      this.pinner()
+    },
     handleMouseOver(d3This, e, n) {
       if (!this.svg && !this.svg.node()) return null;
+
+      // mouseover does nothing if pinned
+      if (this.pinned) return null;
+      const ecx = e.clientX;
+
       const svgDim = this.svg.node().getBoundingClientRect();
 
       // this is what will be displayed in the info data
@@ -191,6 +226,8 @@ export default {
       const dt = d3.select(d3This);
 
       // emphasise the node hovered
+      //const textLength = dt.node().getComputedTextLength();
+      //const textAnchor = dt.attr("text-anchor");
       dt.style("fill", this.colors.vizTextHovered)
         .style("font-weight", "bold")
         .style("font-size", "1.5em");
@@ -198,27 +235,19 @@ export default {
       // let that settle so we can get the dimensions
       // if you do it now then the info fiv wont have been settled
       this.$nextTick(() => {
-        // get the kind of alignment and size of text
-        //const textLength = dt.node().getComputedTextLength();
-
         // these are the dimensions of the svg area
-        const left = e.clientX - svgDim.x;
-        const top = e.clientY - svgDim.y;
+
         const tn = this.$refs["node-info"];
         const s = d3.select(tn);
+        const top = e.clientY - svgDim.y;
 
         if (tn) {
-          const svgDim = this.svg.node().getBoundingClientRect();
+  
           const { width } = tn.getBoundingClientRect();
-
-          const adjustLeft = Math.min(
-            left - 10,
-            svgDim.width - width - 10 
-          );
           s.transition()
             .duration(300)
-            .style("left", adjustLeft + "px")
-            .style("top", top + 26 + "px");
+            .style("left", Math.max(10, ecx - width + 32) + "px")
+            .style("top", (top + 20) + "px");
         }
       });
     },
@@ -286,6 +315,9 @@ export default {
             })
             .on("mouseout", function(e, n) {
               self.handleMouseOut(this, e, n);
+            })
+            .on("click",function(e, n) {
+              self.handleMouseClick(this, e, n);
             })
             .style("fill", this.colors.vizText)
             .attr("dy", "0.31em")

@@ -68,7 +68,6 @@ export const fbuiInit = (store) => {
   githubScopes.forEach((s) => providers.github.addScope(s));
   // start listening for change of user
   authStateListener((user) => {
-    console.log("dispatching ", user);
     store.dispatch("newUser", user);
   });
 };

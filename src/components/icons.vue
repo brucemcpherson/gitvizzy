@@ -115,6 +115,10 @@
         <v-icon v-else-if="name === 'version'" @click="emit()"
           >mdi-counter</v-icon
         >
+        <v-icon v-else-if="name === 'pin'" @click="emit()">mdi-pin</v-icon>
+        <v-icon v-else-if="name === 'unpin'" @click="emit()"
+          >mdi-pin-off</v-icon
+        >
         <v-icon v-else-if="name === 'symbol'" @click="emit()"
           >mdi-feather</v-icon
         >
@@ -140,8 +144,12 @@
         <v-avatar size="24" tile v-else-if="name === 'drive'" @click="emit()">
           <img src="../assets/GoogleDrive_2020.png" />
         </v-avatar>
-        <v-icon v-else-if="name === 'html'" @click="emit()">mdi-language-html5</v-icon>
-        <v-icon v-else-if="name === 'json'" @click="emit()">mdi-code-json"</v-icon>
+        <v-icon v-else-if="name === 'html'" @click="emit()"
+          >mdi-language-html5</v-icon
+        >
+        <v-icon v-else-if="name === 'json'" @click="emit()"
+          >mdi-code-json"</v-icon
+        >
       </span>
     </template>
     <span>

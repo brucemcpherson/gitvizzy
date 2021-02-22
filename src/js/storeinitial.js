@@ -50,6 +50,7 @@ const vTypes = [
 
 const _initial = {
   state: {
+    pinned: null,
     pickerKey: getPickerKey(),
     gitHubToken: null,
     googleToken: null,
@@ -205,8 +206,11 @@ const _initial = {
       state.showDetail = value;
     },
     _filterPlus(state, value) {
-      state.filterPlus = value;
+      state.filterPls = value;
     },
+    setPinned (state, value) { 
+      state.pinned = value
+    }
   },
   getters: {
     pickerKey() {
