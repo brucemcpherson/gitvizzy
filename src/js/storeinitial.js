@@ -1,7 +1,16 @@
+/*global gapi*/
 import { gasVizzyInit, delay } from "./gasvizzy";
-import { logEvent, getPickerKey, signin, signinGithub } from "./fb";
+import {
+  logEvent,
+  getPickerKey,
+  signin,
+  signinGithub,
+  isGoogleTokenValid,
+  signout
+} from "./fb";
 import { applyFilters } from "./filtering";
 import { tree, arrangeTreeData } from "./d3prep";
+import { setTokenData, getTokenData } from "./forager";
 
 const vTypes = [
   {
@@ -50,9 +59,10 @@ const vTypes = [
 
 const _initial = {
   state: {
+    treeModel: [],
     pinned: null,
     pickerKey: getPickerKey(),
-    gitHubToken: null,
+    githubToken: null,
     googleToken: null,
     showPullDialog: false,
     user: null,
@@ -99,11 +109,15 @@ const _initial = {
     vTypes,
   },
   mutations: {
-    clearTokens(state) {
+    setTreeModel(state, value) { 
+      state.treeModel = value
+    },
+     clearTokens(state) {
       state.githubToken = null;
       state.googleToken = null;
     },
     setGithubToken(state, value) {
+      console.log("setting githubtoken", value);
       state.githubToken = value;
     },
     setGoogleToken(state, value) {
@@ -208,9 +222,9 @@ const _initial = {
     _filterPlus(state, value) {
       state.filterPls = value;
     },
-    setPinned (state, value) { 
-      state.pinned = value
-    }
+    setPinned(state, value) {
+      state.pinned = value;
+    },
   },
   getters: {
     pickerKey() {
@@ -233,18 +247,35 @@ const _initial = {
     },
   },
   actions: {
-    signin() {
-      return signin();
+    signout({ commit }) {
+      return signout(commit);
     },
-    signinGithub() {
-      return signinGithub();
+    signin({ commit, dispatch }) {
+      return signin(commit, dispatch);
+    },
+    signinGithub({ commit, dispatch }) {
+      return signinGithub(commit, dispatch);
     },
     newUser({ commit }, value) {
       return commit("setUser", value);
     },
-
+    setStoredTokens({ state }) {
+      const { githubToken, googleToken } = state;
+      return setTokenData({ githubToken, googleToken });
+    },
+    getStoredTokens({ commit }) {
+      return getTokenData().then((result) => {
+        console.log("getting stored tokend", result);
+        if (result) {
+          const { githubToken, googleToken } = result;
+          if (githubToken) commit("setGithubToken", githubToken);
+          if (googleToken) commit("setGoogleToken", googleToken);
+        }
+      });
+    },
     vizzyInit({ commit, dispatch }) {
       commit("setMaking", true);
+
       return gasVizzyInit().then(({ gd, mf, timestamp, dob, fob }) => {
         commit("setGd", gd);
         commit("setMf", mf);
@@ -271,7 +302,6 @@ const _initial = {
       dispatch("updateRoot");
     },
     setViewType({ dispatch, commit }, value) {
-      
       commit("_viewType", value);
       logEvent("filter", {
         name: "viewType",
@@ -384,17 +414,16 @@ const _initial = {
       });
     },
     gapi() {
-      // eslint-disable-next-line no-undef
       gapi.load("picker", () => {
         console.log("gapi picker loaded");
       });
     },
-    pickerStuff({ state }, store) {
-      // TODO - what if token is expired?
-      return state.googleToken ? Promise.resolve() : signin(store);
+    pickerStuff({ commit, dispatch }) {
+      signin(commit, dispatch);
     },
-    githubStuff({ state }, store) {
-      if (!state.githubToken) signinGithub(store);
+    async isGoogleTokenValid({ state }) {
+      const isit = await isGoogleTokenValid(state.googleToken);
+      return isit
     },
     updateRoot({ commit, state }, force) {
       // this allows re-render of whatever to show before waiting

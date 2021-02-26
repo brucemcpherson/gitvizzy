@@ -5,10 +5,10 @@ import {
   firebaseConfig,
   googleScopes,
   githubScopes,
-  pickerKey,
-  gitPublicRepoAuth,
+  pickerKey
 } from "../../secrets/fb";
 let fbal = null;
+import ky from "ky";
 
 // firebase auth not implemented
 // eventually this can be used to create and update apps script projects,
@@ -34,32 +34,13 @@ let providers = {
 const authStateListener = (onUser) => {
   firebase.auth().onAuthStateChanged((user) => {
     return onUser(user);
-    // return remakeAccessToken()
   });
 };
 
 /**
- * generate id token from user
- * @param {object} googleUser
- * @return {string} an id token
- */
-export const getCredential = (user) => {
-  console.log("getcred", user);
-  return firebase.getCredential(user);
-};
-
-/**
- * get access token from user
- * can be used by back end to validate user
- * @param {object} googleUser
- * @return {string} an access token
- */
-export const getAccessToken = (user) => getCredential(user).accessToken;
-
-/**
  * call this once on app initialization
  */
-export const fbuiInit = (store) => {
+export const fbuiInit = (dispatch) => {
   // only allowing google auth because we need it for interacting with the
   // script api
   providers.google = new firebase.auth.GoogleAuthProvider();
@@ -68,19 +49,10 @@ export const fbuiInit = (store) => {
   githubScopes.forEach((s) => providers.github.addScope(s));
   // start listening for change of user
   authStateListener((user) => {
-    store.dispatch("newUser", user);
+    dispatch("newUser", user);
   });
 };
 
-export const remakeAccessToken = async () => {
-  const user = firebase.auth().currentUser;
-  console.log("user", user, providers.google);
-  if (!user) return null;
-  //await user.unlink(providers.google.providerId)
-  const rl = await user.reauthenticateWithPopup(providers.google);
-  console.log("rl", rl);
-  return rl;
-};
 const signer = (provider, onSigned) => {
   console.log("sigining in ", provider);
   return firebase
@@ -92,33 +64,60 @@ const signer = (provider, onSigned) => {
     })
 
     .catch((error) => {
+      console.log("this error", error);
+
+      if (error.code === "auth/account-exists-with-different-credential") {
+        // that's fine because all we want is the credential
+        console.log("linked in with popup", error);
+        return onSigned(error);
+      }
       console.log(error);
+      Promise.reject(error);
     });
 };
 
-export const signinGithub = (store) => {
-  store.commit("setGithubToken", gitPublicRepoAuth);
+export const signinGithub = (commit, dispatch) => {
+  return signer(providers.github, (result) => {
+    commit(
+      "setGithubToken",
+      result && result.credential && result.credential.accessToken
+    );
+    dispatch("setStoredTokens");
+  });
 };
 
-export const signin = (store) => {
-  console.log("sigining in");
+export const checkGoogleToken = (token) => {
+  return ky
+    .get(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${token}`)
+    .json()
+    .catch(() => {
+      return null;
+    });
+};
+
+export const isGoogleTokenValid = (token) => {
+  if (!token) return Promise.resolve(false);
+  return checkGoogleToken(token).then((r) => {
+    console.log(r);
+    return r && !r.error && r.expires_in > 60;
+  });
+};
+
+export const signin = (commit, dispatch) => {
   return signer(providers.google, (result) => {
-    console.log("signinresult", result);
-    store.commit(
+    commit(
       "setGoogleToken",
       result && result.credential && result.credential.accessToken
     );
+    dispatch("setStoredTokens");
   });
 };
-export const signout = (store) => {
-  store.commit("clearTokens", null);
+
+export const signout = (commit) => {
+  commit("clearTokens", null);
   firebase.auth().signOut();
 };
-export const getPickerStuff = (user) => {
-  console.log("pickerstuff", user);
-  return {
-    token: getCredential(user),
-    pickerKey,
-  };
-};
+
+
+
 export const getPickerKey = () => pickerKey;

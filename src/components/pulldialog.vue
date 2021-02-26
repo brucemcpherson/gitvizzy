@@ -62,7 +62,12 @@
         <v-card-title>
           Select the files to clone to your project
         </v-card-title>
-        <repo-tree v-if="repoUrl" :url="repoUrl" :folder="folder" />
+        <repo-tree
+          v-if="repoUrl"
+          :url="repoUrl"
+          :folder="folder"
+          :projectPath="projectPath"
+        />
 
         <span v-else> No Repo location url available from github</span>
       </v-card-text>
@@ -130,6 +135,7 @@ export default {
     ownerPic: String,
     folder: String,
     folderLabel: String,
+    projectPath: String,
   },
   methods: {
     picked(value) {

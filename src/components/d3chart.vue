@@ -154,30 +154,38 @@ export default {
   },
   name: "d3chart",
   watch: {
-    root() {
-      this.rebuild();
+    root: {
+      immediate: true,
+      handler(val) {
+        console.log('handling', val)
+        if(val) {
+          this.initSvg();
+          this.rebuild();
+        }
+      }
     },
-  },
-
-  mounted() {
-    this.resize();
-    this.makeSvg();
-
-    this.g = this.svg.append("g").attr("font-size", 10);
-
-    this.link = this.g
-      .append("g")
-      .attr("fill", "none")
-      .attr("stroke", "#BDBDBD")
-      .attr("stroke-opacity", 0.4)
-      .attr("stroke-width", 1.0);
-
-    this.node = this.g
-      .append("g")
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-width", 3);
+    
   },
   methods: {
+    initSvg() {
+      if(!this.g) {
+        this.makeSvg();
+
+        this.g = this.svg.append("g").attr("font-size", 10);
+
+        this.link = this.g
+          .append("g")
+          .attr("fill", "none")
+          .attr("stroke", "#BDBDBD")
+          .attr("stroke-opacity", 0.4)
+          .attr("stroke-width", 1.0);
+
+        this.node = this.g
+          .append("g")
+          .attr("stroke-linejoin", "round")
+          .attr("stroke-width", 3);
+      }
+    },
     pinner(force) {
       this.setPinned(this.pinned && !force ? null : this.infoData);
     },
@@ -205,8 +213,13 @@ export default {
         .style("font-weight", "normal")
         .style("font-size", "1em");
     },
-    handleMouseClick() {
+    handleMouseClick(d3This, e, n) {
       if (!this.svg && !this.svg.node()) return null;
+      // first step is to unpin
+      if (this.pinned) this.pinner()
+      // then move to the new place
+      this.handleMouseOver(d3This, e, n)
+      // then repin
       this.pinner()
     },
     handleMouseOver(d3This, e, n) {

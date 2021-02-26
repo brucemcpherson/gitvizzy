@@ -13,7 +13,7 @@
 <script>
 import maps from "@/js/storemaps";
 import icons from "@/components/icons";
-import {  signout, signin } from "@/js/fb";
+
 export default {
   components: {
     icons
@@ -21,11 +21,12 @@ export default {
   methods: {
     handleSigning () {
       if (this.isLoggedIn) {
-        signout(this.$store)
+        this.signout()
       } else {
-        signin(this.$store)
+        this.signin()
       }
-    }
+    },
+    ...maps.actions
   },
   computed: {
     ...maps.state,

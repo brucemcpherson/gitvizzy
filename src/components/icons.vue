@@ -12,8 +12,15 @@
           :color="colors.bigTree"
           >mdi-family-tree</v-icon
         >
+
+        <v-icon v-else-if="name === 'json'" @click="emit()"
+          >mdi-code-json</v-icon
+        >
         <v-icon v-else-if="name === 'filter-off'" @click="emit()"
           >mdi-filter-off</v-icon
+        >
+        <v-icon v-else-if="name === 'open'" @click="emit()"
+          >mdi-open-in-new</v-icon
         >
         <v-icon v-else-if="name === 'filter-on'" @click="emit()"
           >mdi-filter</v-icon
@@ -29,6 +36,9 @@
         >
         <v-icon v-else-if="name === 'company'" @click="emit()"
           >mdi-office-building</v-icon
+        >
+        <v-icon v-else-if="name === 'alert'" @click="emit()"
+          >mdi-alert-circle</v-icon
         >
         <v-icon
           v-else-if="name === 'small-tree'"
@@ -147,9 +157,8 @@
         <v-icon v-else-if="name === 'html'" @click="emit()"
           >mdi-language-html5</v-icon
         >
-        <v-icon v-else-if="name === 'json'" @click="emit()"
-          >mdi-code-json"</v-icon
-        >
+
+        <v-icon v-else @click="emit()">mdi-help"</v-icon>
       </span>
     </template>
     <span>

@@ -1,61 +1,37 @@
 <template>
   <v-treeview
-    v-model="tree"
-    :open="initiallyOpen"
-    :items="filteredItems"
-    activatable
-    item-key="url"
-    open-on-click
+    v-if="items"
+    v-model="tm"
+    :items="items"
     selectable
+    return-object
+    :open.sync="openIds"
   >
     <template v-slot:prepend="{ item, open }">
       <v-icon v-if="item.type === 'tree'">
         {{ open ? "mdi-folder-open" : "mdi-folder" }}
       </v-icon>
-      <icons v-else :name="files[getExtension(item)]" />
+      <icons v-else :name="getFileIcon(item)" :tip="getFileTip(item)" />
+    </template>
+    <template v-slot:label="{ item }">
       {{ item.path }}
+      <v-btn icon :href="getFileLink(item)" target="_blank"
+        ><icons name="open"
+      /></v-btn>
     </template>
   </v-treeview>
 </template>
 <script>
 // get the default branch
-import { decorator } from "@/js/cache";
+import { decorator, cacheInit } from "@/js/cache";
 import icons from "@/components/icons";
+import maps from "@/js/storemaps";
 
-// tree is a github tree response - and the tree children may contain further trees
-// it goes { tree: {... tree:[]}}
-const dealTree = (treeBranch, result = {}, trackPath = "") => {
-  const treeChildren = (treeBranch && treeBranch.tree) || [];
-  result.children = [];
-
-  return Promise.all(
-    treeChildren.map((t) => {
-      result.children.push(t);
-      t.trackPath = trackPath;
-      if (t.type === "tree") {
-        return getTreeBranch(t).then((tc) => {
-          dealTree(tc, t, trackPath + t.path + "/");
-        });
-      }
-    })
-  ).then(() => {
-    result.children.sort((a, b) => {
-      if (a.type === b.type) {
-        return a.path.toLowerCase() < b.path.toLowerCase()
-          ? -1
-          : a.path === b.path
-          ? 0
-          : 1;
-      } else {
-        return a.type === "blob" ? -1 : 1;
-      }
-    });
-    return result;
-  });
-};
-const getExtension = ({ path }) => path.replace(/.*\./, "");
+const getExtension = ({ path }) =>
+  path.replace(/..*(\..*)/, "$1").replace(/^\./, "");
 const getTreeBranch = async (node) => decorator(node.url);
 const getTreeRoot = (branch) => getTreeBranch(branch.commit.commit.tree);
+
 const getBranch = async (repoUrl) => {
   // first get the complete repo
   const repo = await decorator(repoUrl);
@@ -72,53 +48,236 @@ export default {
     url: String,
     folder: String,
     infoName: String,
+    projectPath: String,
   },
   components: {
     icons,
   },
   watch: {
-    url() {
-      this.populateTree();
+    url: {
+      immediate: true,
+      handler() {
+        this.init();
+      },
     },
   },
   computed: {
-    filteredItems() {
-      // start at the path of the item
-      //console.log(this.folder, this.treeData.children, this.infoName);
-      return this.treeData.children;
+    tm: {
+      get() {
+        return this.treeModel;
+      },
+      set(value) {
+        this.setTreeModel(value);
+      },
     },
-  },
-  mounted() {
-    this.populateTree();
+    ...maps.state,
   },
   methods: {
-    async populateTree() {
-      if (this.url) {
-       
-        this.repoData = await getBranch(this.url);
-        this.treeRoot = await getTreeRoot(this.repoData);
-        this.treeData = await dealTree(this.treeRoot);
-      } else {
-       
+    init() {
+      this.populateTree().then(({ pruned, model }) => {
+        if (pruned) {
+          this.items = pruned.children;
+          // If you don't postpone this then we hit a problem
+          // the model sets back to empty sometimes
+          /// doing it on nexttick appears to avoid it but I dont know why
+          // thats all folks
+          this.$nextTick(() => {
+            this.tm = model;
+            this.openIds = [{ id: this.url }];
+            this.getContents();
+          });
+        } else {
+          this.tm = [];
+          this.items = [];
+          this.openIds = [];
+        }
+      });
+    },
+    // tree is a github tree response - and the tree children may contain further trees
+    // it goes { tree: {... tree:[]}}
+    pruneTree(model, treeBranch, pruned = {}, trackPath = "") {
+      // a github tree is noted by the presence of a tree property value
+      const treeChildren = (treeBranch && treeBranch.tree) || [];
+
+      // we'll start accepting items only from the project head path onwards
+      const accept =
+        !this.projectPath ||
+        this.projectPath === "/" ||
+        trackPath.startsWith(this.projectPath);
+      const digFurther =
+        accept || this.projectPath.slice(0, trackPath.length) === trackPath;
+
+      // dig further into the tree - it's going to be async
+      return digFurther
+        ? Promise.all(
+            treeChildren.map((t) => {
+              const fileDef = this.fixSkip(t);
+              // enhance it with extra props
+              t.skip = fileDef.skip
+              t.id = t.url
+              t.trackPath = trackPath
+              // if we're including foldernames
+             
+              let folderName = trackPath
+              if (this.projectPath && this.projectPath !== '/') folderName = folderName.slice(this.projectPath.length)
+              if (folderName) folderName += "/"
+              t.gasName = (folderName + fileDef.renamer(t.path)).replace(/\/+/g,'/')
+              t.gasType = fileDef.type
+
+              if (accept) {
+                // this is a good one so add it to the pruned children
+                if (!pruned.children) pruned.children = [];
+
+                pruned.children.push(t);
+                if (!t.skip) model.push(t);
+              }
+              // if this is itself a tree then we need to recurse
+              if (t.type === "tree")
+                return getTreeBranch(t).then((tc) => {
+                  return this.pruneTree(
+                    model,
+                    tc,
+                    accept ? t : pruned,
+                    trackPath + t.path + "/",
+                    model
+                  );
+                });
+            })
+          )
+        : Promise.resolve(null);
+    },
+    fixSkip(item) {
+      const fd = this.getFileDef(item);
+      return {
+        skip:
+          fd.skipDefault ||
+          item.path.slice(0, 1) === "." ||
+          (fd.name === "json" && item.path !== "appsscript.json"),
+        ...fd,
+      };
+    },
+    getContents() {
+      return Promise.all(
+        this.tm.map((t) =>
+          this.getContent(t).then((content) => ({
+            ...t,
+            content,
+          }))
+        )
+      ).then((all) => {
+        console.log(all);
+        return all;
+      });
+    },
+    getContent(item) {
+      return decorator(item.url).then((r) => {
+        const buff = new Buffer.from(r.content, "base64");
+        const text = buff.toString();
+        return text;
+      });
+    },
+    getFileLink(item) {
+      const base = this.folder.replace(this.projectPath, "");
+      return `${base}/${item.trackPath}/${item.path}`.replace(/\/+/g, "/");
+    },
+    getFileIcon(item) {
+      const ic = this.getFileDef(item).name;
+
+      return ic;
+    },
+    getFileTip(item) {
+      const ic = this.getFileDef(item).tip;
+
+      return ic;
+    },
+    getFileDef(item) {
+      const df = this.files[getExtension(item)] || this.unknown;
+      return df;
+    },
+    populateTree() {
+      if (!this.url) {
         this.repoData = null;
         this.treeRoot = null;
-        this.treeData - [];
+        return Promise.resolve(null);
+      } else {
+        // this will pick up the latest github token
+        cacheInit(this.$store);
+        let pruned = {
+          children: [
+            {
+              id: this.url,
+              path: this.projectPath,
+              trackPath: "",
+              url: this.url,
+            },
+          ],
+        };
+        return getBranch(this.url)
+          .then((r) => {
+            this.repoData = r;
+            return getTreeRoot(r);
+          })
+          .then((r) => {
+            this.treeRoot = r;
+            const model = [];
+            return this.pruneTree(
+              model,
+              this.treeRoot,
+              pruned.children[0]
+            ).then(() => ({ pruned, model }));
+          });
       }
     },
     getExtension(ob) {
       return getExtension(ob);
     },
+    ...maps.mutations,
   },
   data: () => ({
-    treeData: [],
     repoData: null,
-    initiallyOpen: ["public"],
-    files: {
-      html: "html",
-      gs: "appsscript",
-      json: "json",
+    openIds: [],
+    items: null,
+    unknown: {
+      name: "alert",
+      tip: "Apps Script can't use this file - will be renamed as HTML",
+      type: "HTML",
+      skipDefault: true,
+      renamer: (path) => path + ".html",
     },
-    tree: [],
+    files: {
+      html: {
+        name: "html",
+        type: "HTML",
+        tip: "Files for HTMLSERVICE",
+        renamer: (path) => path,
+      },
+      gs: {
+        name: "appsscript",
+        type: "SERVER_JS",
+        tip: "Server side script",
+        renamer: (path) => path,
+      },
+      json: {
+        name: "json",
+        type: "JSON",
+        tip: "manifest file",
+        renamer: (path) => path,
+      },
+      js: {
+        name: "appsscript",
+        type: "SERVER_JS",
+        tip: "Server side script - will be renamed as .gs",
+        renamer: (path) => path.replace(/\.js$/, ".gs"),
+      },
+      ts: {
+        name: "typescript",
+        type: "HTML",
+        tip:
+          "Warning: Needs clasp/webpack to convert - will be renamed as .ts.html",
+        skipDefault: true,
+        renamer: (path) => path + ".html",
+      },
+    },
   }),
 };
 </script>

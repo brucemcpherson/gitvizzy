@@ -167,7 +167,7 @@ export const applyFilters = (state) => {
   } = state;
 
   // first clear existing filter on repo and owner
-  Object.keys(dob).forEach((f) => dob[f].filterAll());
+  if(dob)Object.keys(dob).forEach((f) => dob[f].filterAll());
 
   // these are the vanilla filters
   const filters = {

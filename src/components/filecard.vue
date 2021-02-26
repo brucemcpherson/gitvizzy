@@ -18,6 +18,7 @@
         :ownerPic="ownerPic"
         :folder="folder"
         :folderLabel="folderLabel"
+        :projectPath="path"
       />
     </v-dialog>
     <v-list :color="listColor" dense>
@@ -85,7 +86,10 @@
         <v-list-item-content
           ><span>
             <a :href="scriptUrl" target="_blank">
-              Attempt to open in apps Script IDE
+              <span class="mr-2"
+                >Open in apps Script IDE (you may need to request access
+                from</span
+              ><icons :url="ownerPic" />)
             </a></span
           >
         </v-list-item-content>
@@ -104,9 +108,7 @@
     </v-card-text>
 
     <v-card v-if="manifest" :color="listColor" flat>
-      <v-card-title
-        >Create Apps Script project from github</v-card-title
-      >
+      <v-card-title>Create Apps Script project from github</v-card-title>
 
       <v-list :color="listColor">
         <v-list-item>
@@ -118,12 +120,32 @@
             ><span v-if="isAuthorized"
               >{{ userName }} has authorized apps script access</span
             ><span v-else>
-              scrviz will need to access your apps script projects
+              scrviz will need write access your apps script projects
+            </span></v-list-item-content
+          >
+          <v-list-item-action>
+            <v-btn color="accent" @click="doAuth" :disabled="isAuthorized"
+              ><icons name="appsscript" /><span class="ml-2"
+                >authorize</span
+              ></v-btn
+            ></v-list-item-action
+          >
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-icon>
+            <icons v-if="isGithubbed" :url="userImage" name="owners" avatar />
+            <icons v-else name="auth" />
+          </v-list-item-icon>
+          <v-list-item-content
+            ><span v-if="isGithubbed"
+              >{{ userName }} has authorized github access</span
+            ><span v-else>
+              scrviz will need read access your github projects
             </span></v-list-item-content
           >
           <v-list-item-action
-            ><v-btn color="accent" @click="doAuth" :disabled="isAuthorized"
-              >authorize</v-btn
+            ><v-btn color="accent" @click="doGitAuth" :disabled="isGithubbed"
+              ><icons name="github" /><span class="ml-2">authorize</span></v-btn
             ></v-list-item-action
           >
         </v-list-item>
@@ -183,13 +205,17 @@ export default {
     };
   },
   methods: {
-    pullPin () {
-      this.$emit('pin')
-      this.flipPullDialog()
+    pullPin() {
+      this.$emit("pin");
+      this.flipPullDialog();
     },
     doAuth() {
-      this.$emit('pin')
-      this.pickerStuff(this.$store);
+      this.$emit("pin");
+      this.pickerStuff();
+    },
+    doGitAuth() {
+      this.$emit("pin");
+      this.signinGithub();
     },
     clipText(value) {
       this.clipping = false;
@@ -200,9 +226,19 @@ export default {
     ...maps.mutations,
     ...maps.actions,
   },
+  asyncComputed: {
+    async isAuthorized() {
+      console.log(this.isLoggedIn, this.googleToken);
+      return (
+        (await !!this.googleToken) &&
+        this.isLoggedIn &&
+        this.isGoogleTokenValid()
+      );
+    },
+  },
   computed: {
-    isAuthorized() {
-      return !!this.googleToken && this.isLoggedIn;
+    isGithubbed() {
+      return !!this.githubToken;
     },
     modelPullDialog: {
       get() {
@@ -229,7 +265,6 @@ export default {
     folder() {
       return `https://github.com/${this.fields.repoFullName}/tree/master/${this.masterName}`;
     },
-
     fileLabel() {
       return "manifest: " + this.fields.path;
     },

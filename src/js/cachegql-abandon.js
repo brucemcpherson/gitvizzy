@@ -1,21 +1,25 @@
-// this used to be on redis, but we need it client side now
-// so the is a just a gist compressed
+// NO point in the GQL version of the api
+// it truncates string fields over 1mb, so I've had to scrap this
+// will come back to it if there's a fix
 const { decompress } = require("./compress");
 const { queryDefinition } = require("./settings");
 const { Octokit } = require("@octokit/rest");
 const delay = require("delay");
-const { getCacheData, setCacheData } = require("./forager");
 
 import ky from "ky";
-export const getky = (url) => ky.get(url).json();
-
+let kyg = null;
 let octokit = null;
 
 export const cacheInit = (store) => {
-  console.log('initializing octolit', store.state.githubToken)
   octokit = new Octokit({
-    auth: `token ${store.state.githubToken}`,
+    auth: store.githubToken,
     userAgent: "scrviz v1.0.1",
+  });
+  kyg = ky.create({
+    prefixUrl: "https://api.github.com",
+    headers: {
+      Authorization: `Bearer fc0562222353d85fb97cf9184446bc558f19230c`,
+    },
   });
 };
 
@@ -56,27 +60,46 @@ export const decorator = (url) => {
   );
 };
 
-// this should get us the latest raw url for this gist
-const raw = () => {
-  return getky(queryDefinition.gistApi).then((r) => {
-    return r.files && r.files[Object.keys(r.files)[0]].raw_url;
-  });
-};
 
 // cache is using gist now
 export const cacheGet = async () => {
-  // maybe its in local storage 
-  let text = await getCacheData()
-  if (!text) {
-    const rawUrl = await raw();
-    const response = await ky.get(rawUrl);
-    text = await response.text();
-    // write that sucker to local storage for next time
-    setCacheData(text).then(() => { 
-      console.log('...wrote cache to local storage')
-    })
-  } else { 
-    console.log('...found github data locally')
-  }
+  const text = await cacheFromGql();
+  console.log(text)
   return text && decompress(text);
+};
+
+const getGist = () => `
+  query ($name: String!) {
+    viewer {
+      gist(name: $name) {
+        files {
+          text
+        }
+      }
+    }
+  }
+`;
+const gq = (qv) => {
+  return kyg("graphql", {
+    method: "POST",
+    json: qv,
+  });
+};
+
+const cacheFromGql = async () => {
+  const r = await gq({
+    query: getGist(),
+    variables: {
+      name: queryDefinition.gistId,
+    },
+  }).json();
+  const content =
+    r &&
+    r.data &&
+    r.data.viewer &&
+    r.data.viewer.gist &&
+    r.data.viewer.gist.files &&
+    r.data.viewer.gist.files[0] &&
+    r.data.viewer.gist.files[0].text;
+  return content;
 };
