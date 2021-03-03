@@ -1,4 +1,5 @@
 <template>
+
   <v-treeview
     v-if="items"
     v-model="tm"
@@ -49,12 +50,13 @@ export default {
     folder: String,
     infoName: String,
     projectPath: String,
+    projectKey: String
   },
   components: {
     icons,
   },
   watch: {
-    url: {
+    projectKey: {
       immediate: true,
       handler() {
         this.init();
@@ -74,24 +76,33 @@ export default {
   },
   methods: {
     init() {
-      this.populateTree().then(({ pruned, model }) => {
-        if (pruned) {
-          this.items = pruned.children;
-          // If you don't postpone this then we hit a problem
-          // the model sets back to empty sometimes
-          /// doing it on nexttick appears to avoid it but I dont know why
-          // thats all folks
-          this.$nextTick(() => {
-            this.tm = model;
-            this.openIds = [{ id: this.url }];
-            this.getContents();
-          });
-        } else {
-          this.tm = [];
-          this.items = [];
-          this.openIds = [];
-        }
-      });
+      this.setSpinning(true)
+      this.populateTree()
+        .then(({ pruned, model }) => {
+          if (pruned) {
+            this.items = pruned.children;
+            // If you don't postpone this then we hit a problem
+            // the model sets back to empty sometimes
+            /// doing it on nexttick appears to avoid it but I dont know why
+            // thats all folks
+            this.$nextTick(() => {
+              this.tm = model;
+              this.openIds = [{ id: this.url }];
+            });
+          } else {
+            this.tm = [];
+            this.items = [];
+            this.openIds = [];
+          }
+        })
+        .catch((error)=> {
+          this.setShowError({
+            message:'',
+            title: 'Failed to decipher tree from github repo',
+            error
+          })
+        })
+        .finally(() => (this.setSpinning (false)));
     },
     // tree is a github tree response - and the tree children may contain further trees
     // it goes { tree: {... tree:[]}}
@@ -113,16 +124,20 @@ export default {
             treeChildren.map((t) => {
               const fileDef = this.fixSkip(t);
               // enhance it with extra props
-              t.skip = fileDef.skip
-              t.id = t.url
-              t.trackPath = trackPath
+              t.skip = fileDef.skip;
+              t.id = t.url;
+              t.trackPath = trackPath;
               // if we're including foldernames
-             
-              let folderName = trackPath
-              if (this.projectPath && this.projectPath !== '/') folderName = folderName.slice(this.projectPath.length)
-              if (folderName) folderName += "/"
-              t.gasName = (folderName + fileDef.renamer(t.path)).replace(/\/+/g,'/')
-              t.gasType = fileDef.type
+
+              let folderName = trackPath;
+              if (this.projectPath && this.projectPath !== "/")
+                folderName = folderName.slice(this.projectPath.length);
+              if (folderName) folderName += "/";
+              t.gasName = (folderName + fileDef.renamer(t.path)).replace(
+                /\/+/g,
+                "/"
+              );
+              t.gasType = fileDef.type;
 
               if (accept) {
                 // this is a good one so add it to the pruned children
@@ -156,29 +171,14 @@ export default {
         ...fd,
       };
     },
-    getContents() {
-      return Promise.all(
-        this.tm.map((t) =>
-          this.getContent(t).then((content) => ({
-            ...t,
-            content,
-          }))
-        )
-      ).then((all) => {
-        console.log(all);
-        return all;
-      });
-    },
-    getContent(item) {
-      return decorator(item.url).then((r) => {
-        const buff = new Buffer.from(r.content, "base64");
-        const text = buff.toString();
-        return text;
-      });
-    },
+
     getFileLink(item) {
-      const base = this.folder.replace(this.projectPath, "");
-      return `${base}/${item.trackPath}/${item.path}`.replace(/\/+/g, "/");
+      
+      const base = this.folder.replace(this.projectPath, "").replace(/\/+$/g,'');
+      const flink= (`${base}` +`/${item.trackPath}/${item.path}`.replace(/\/+/g,'/')).replace(/\/+$/g,'');
+    
+      return flink
+
     },
     getFileIcon(item) {
       const ic = this.getFileDef(item).name;
@@ -242,32 +242,37 @@ export default {
       tip: "Apps Script can't use this file - will be renamed as HTML",
       type: "HTML",
       skipDefault: true,
-      renamer: (path) => path + ".html",
+      renamer: (path) => path,
+      extension: ".html"
     },
     files: {
       html: {
         name: "html",
         type: "HTML",
         tip: "Files for HTMLSERVICE",
-        renamer: (path) => path,
+        renamer: (path) => path.replace(/\.html$/,""),
+        extension: ".html"
       },
       gs: {
         name: "appsscript",
         type: "SERVER_JS",
         tip: "Server side script",
-        renamer: (path) => path,
+        renamer: (path) => path.replace(/\.gs$/,""),
+        extension: ".gs"
       },
       json: {
         name: "json",
         type: "JSON",
         tip: "manifest file",
-        renamer: (path) => path,
+        renamer: (path) => path.replace(/\.json$/,""),
+        extension: ".json"
       },
       js: {
         name: "appsscript",
         type: "SERVER_JS",
         tip: "Server side script - will be renamed as .gs",
-        renamer: (path) => path.replace(/\.js$/, ".gs"),
+        renamer: (path) => path.replace(/\.js$/, ""),
+        extension: ".gs"
       },
       ts: {
         name: "typescript",
@@ -275,7 +280,8 @@ export default {
         tip:
           "Warning: Needs clasp/webpack to convert - will be renamed as .ts.html",
         skipDefault: true,
-        renamer: (path) => path + ".html",
+        renamer: (path) => path,
+        extension: ".html"
       },
     },
   }),

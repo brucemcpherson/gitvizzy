@@ -112,6 +112,20 @@
 
       <v-list :color="listColor">
         <v-list-item>
+          <v-list-item-content>
+            <span
+              >You may need to enable the apps script API
+              <span v-if="isLoggedIn">for {{ userName }}</span
+              >. <br />The setting is here
+              <a
+                href="https://script.google.com/home/usersettings"
+                target="_blank"
+                >https://script.google.com/home/usersettings</a
+              ></span
+            >
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
           <v-list-item-icon>
             <icons v-if="isAuthorized" :url="userImage" name="owners" avatar />
             <icons v-else name="auth" />
@@ -119,6 +133,8 @@
           <v-list-item-content
             ><span v-if="isAuthorized"
               >{{ userName }} has authorized apps script access</span
+            ><span v-else-if="needMore">
+              Please grant these additional scopes {{ denied }} </span
             ><span v-else>
               scrviz will need write access your apps script projects
             </span></v-list-item-content
@@ -126,7 +142,7 @@
           <v-list-item-action>
             <v-btn color="accent" @click="doAuth" :disabled="isAuthorized"
               ><icons name="appsscript" /><span class="ml-2"
-                >authorize</span
+                >{{authButton}}</span
               ></v-btn
             ></v-list-item-action
           >
@@ -160,7 +176,7 @@
             ><v-btn
               color="accent"
               @click="pullPin()"
-              :disabled="showPullDialog || !isAuthorized"
+              :disabled="showPullDialog || !isAuthorized || !isGithubbed"
               >Configure</v-btn
             ></v-list-item-action
           >
@@ -211,7 +227,11 @@ export default {
     },
     doAuth() {
       this.$emit("pin");
-      this.pickerStuff();
+      if (this.needMore) {
+        this.moreScopes();
+      } else {
+        this.signin();
+      }
     },
     doGitAuth() {
       this.$emit("pin");
@@ -226,17 +246,23 @@ export default {
     ...maps.mutations,
     ...maps.actions,
   },
-  asyncComputed: {
-    async isAuthorized() {
-      console.log(this.isLoggedIn, this.googleToken);
+  computed: {
+    denied() {
       return (
-        (await !!this.googleToken) &&
-        this.isLoggedIn &&
-        this.isGoogleTokenValid()
+        this.checkScopes &&
+        this.checkScopes.denied &&
+        this.checkScopes.denied.join(",")
       );
     },
-  },
-  computed: {
+    authButton() {
+      return this.needMore ? "grant" : "authorize";
+    },
+    needMore() {
+      return (!this.checkScopes || !this.checkScopes.ok) && this.isLoggedIn;
+    },
+    isAuthorized() {
+      return this.isLoggedIn && !!this.googleToken && this.checkScopes.ok;
+    },
     isGithubbed() {
       return !!this.githubToken;
     },

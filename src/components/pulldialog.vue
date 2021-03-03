@@ -44,7 +44,11 @@
 
     <v-card flat>
       <v-card-title
-        >THIS IS STILL UNDER DEVELOPMENT - check back later</v-card-title
+        >Select the files to clone to your new apps script project</v-card-title
+      >
+      <v-card-text class="caption">
+        Selected files unsupported by apps script files will be renamed to html.
+        Folder names will be preserved.</v-card-text
       >
       <v-card-text>
         <icons name="github" /><repo-chip
@@ -59,20 +63,27 @@
           :infoChildrenName="infoChildrenName"
           :iconType="iconType"
         />
-        <v-card-title>
-          Select the files to clone to your project
-        </v-card-title>
-        <repo-tree
-          v-if="repoUrl"
-          :url="repoUrl"
-          :folder="folder"
-          :projectPath="projectPath"
-        />
+
+        <span v-if="repoUrl">
+          <repo-tree
+            :url="repoUrl"
+            :folder="folder"
+            :project-path="projectPath"
+            :project-key="projectKey"
+          />
+          <v-progress-linear
+            v-if="spinning"
+            indeterminate
+            color="accent"
+            rounded
+            class="my-2"
+          ></v-progress-linear>
+        </span>
 
         <span v-else> No Repo location url available from github</span>
       </v-card-text>
       <v-overlay :value="!modelPermit" absolute> </v-overlay>
-      <v-card-text>
+      <v-card-text v-if="isReady">
         <v-form>
           <v-switch
             v-model="modelContainerBound"
@@ -102,20 +113,74 @@
             v-model="modelProjectName"
             label="Apps Script project name"
             required
-            :value="repoName"
           ></v-text-field>
         </v-form>
       </v-card-text>
+      <v-card-actions>
+        <v-btn
+          class="mx-4 mb-2"
+          :disabled="!!createDisabled"
+          color="accent"
+          @click="create"
+          >Create</v-btn
+        >
+
+        <v-progress-linear
+          v-if="creating"
+          class="mx-4 mb-2"
+          color="accent"
+          indeterminate
+          rounded
+          height="8"
+        ></v-progress-linear>
+
+        <span v-else-if="scriptUrl" class="mx-4 mb-2">
+          <icons
+            v-if="canClip"
+            name="copy"
+            :tip="clipping ? 'script Url copied' : 'copy script url'"
+            @clicked="clipText(scriptUrl)"
+          />
+          <icons v-else name="id" />
+
+          <span class="mx-4">
+            <span class="mr-2">Created project {{ modelProjectName }}</span>
+            <a :href="scriptUrl" target="_blank">
+              <span class="mr-2">Open in apps Script IDE</span>
+            </a>
+            <span v-if="modelContainerBound && pickedId">
+              <icons :url="pickedIconUrl" />
+              <span class="mx-2">
+                <a :href="pickedUrl" target="_blank">{{ pickedName }}</a>
+              </span>
+            </span>
+          </span>
+        </span>
+      </v-card-actions>
     </v-card>
   </div>
 </template>
 <script>
+import { decorator } from "@/js/cache";
 import maps from "@/js/storemaps";
 import icons from "@/components/icons";
 import repoinfochip from "@/components/repoinfochip";
 import repochip from "@/components/repochip";
 import picker from "@/components/picker";
 import repotree from "@/components/repotree";
+import { createProject } from "@/js/scrapi";
+const initialData = () => {
+  return {
+    projectName: null,
+    modelContainerBound: false,
+    modelPermit: true,
+    pob: null,
+    clipping: false,
+    creating: false,
+    createdProject: null,
+    currentFolder: null
+  };
+};
 export default {
   components: {
     icons,
@@ -137,21 +202,99 @@ export default {
     folderLabel: String,
     projectPath: String,
   },
+  watch: {
+    projectKey: {
+      immediate: true,
+      handler() {
+        Object.assign(this.$data, initialData());
+      },
+    },
+  },
   methods: {
+    create() {
+      this.creating = true;
+      this.createdProject = null;
+      this.getContents()
+        .then((contents) => {
+          return createProject({
+            title: this.modelProjectName,
+            contents,
+            parentId: this.modelContainerBound && this.pickedId,
+          }).then((response) => {
+            this.createdProject = response.result;
+          });
+        })
+        .catch((response) => {
+          const error = (response && response.result && response.result.error) || error
+          this.setShowError({
+            message:'Error while writing to Apps Script API',
+            title: 'Failed to create project content',
+            error
+          })
+
+          console.log("project failed", response);
+        })
+        .finally(() => (this.creating = false));
+    },
     picked(value) {
       this.pob = value;
     },
-    clipText() {
+
+    clipText(value) {
       this.clipping = false;
       return navigator.clipboard
-        .writeText(this.pickedId)
+        .writeText(value)
         .then(() => (this.clipping = true));
+    },
+    getContents() {
+      return Promise.all(
+        this.treeModel.map((t) =>
+          this.getContent(t).then((content) => ({
+            ...t,
+            content,
+          }))
+        )
+      )
+    },
+    getContent(item) {
+      return decorator(item.url).then((r) => {
+        const buff = new Buffer.from(r.content, "base64");
+        const text = buff.toString();
+        return text;
+      });
     },
     ...maps.mutations,
     ...maps.actions,
   },
 
   computed: {
+    projectKey() {
+      return this.url + this.projectPath;
+    },
+    created() {
+      return !!this.createdProject;
+    },
+    scriptUrl() {
+      return this.scriptId
+        ? `https://script.google.com/home/projects/${this.scriptId}/edit`
+        : null;
+    },
+    scriptTitle() {
+      return this.modelProjectName;
+    },
+    scriptId() {
+      return this.createdProject && this.createdProject.scriptId;
+    },
+    createDisabled() {
+      return (
+        !this.isReady ||
+        this.creating ||
+        (this.modelContainerBound && !this.pickedId)
+      );
+    },
+    isReady() {
+      return this.treeModel && this.treeModel.length;
+    },
     canClip() {
       return navigator.clipboard && navigator.clipboard.writeText;
     },
@@ -169,7 +312,7 @@ export default {
     },
     modelProjectName: {
       get() {
-        return this.projectName || this.repoName;
+        return this.projectName || "scrviz-" + this.repoName;
       },
       set(value) {
         this.projectName = value;
@@ -177,14 +320,6 @@ export default {
     },
     ...maps.state,
   },
-  data: () => {
-    return {
-      projectName: null,
-      modelContainerBound: false,
-      modelPermit: true,
-      pob: null,
-      clipping: false,
-    };
-  },
+  data: () => initialData(),
 };
 </script>

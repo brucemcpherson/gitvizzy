@@ -4,110 +4,108 @@
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
     <div id="tidy-tree" style="width:100%;" v-resize="resize"></div>
-    <div v-if="root">
-      <div v-if="sv" ref="node-info" style="position:absolute">
-        <v-card :color="colors.info" dark>
-          <v-toolbar color="secondary">
-            <repo-chip :repoName="repoName" :ownerPic="ownerPic" />
-            <v-spacer v-if="repoName"></v-spacer>
-            <repo-info-chip
-              :repoName="repoName"
-              :pic="pic"
-              :infoName="infoName"
-              :infoChildrenCount="infoChildrenCount"
-              :infoChildrenName="infoChildrenName"
-              :iconType="iconType"
-            />
-            <v-spacer></v-spacer>
-            <icons
-              v-if="pinned"
-              name="unpin"
-              @clicked="pinner()"
-              :tip="`unpin ${infoName}`"
-            />
-            <icons
-              v-else
-              name="pin"
-              @clicked="pinner()"
-              :tip="`pin ${infoName}`"
-            />
-          </v-toolbar>
-          <v-card-text>
-            <owner-card
-              :fields="fields"
-              v-if="isOwner"
-              :listColor="colors.info"
-            />
-            <repo-card
-              :fields="fields"
-              v-else-if="isRepo"
-              :listColor="colors.info"
-            />
-            <file-card
-              :fields="fields"
-              v-else-if="isFile"
-              :listColor="colors.info"
-              :manifest="manifest"
-              :repoName="repoName"
-              :repoUrl="repoUrl"
-              :pic="pic"
-              :infoName="infoName"
-              :infoChildrenCount="infoChildrenCount"
-              :infoChildrenName="infoChildrenName"
-              :iconType="iconType"
-              :ownerPic="ownerPic"
-              @pin="pinner(true)"
-            />
-            <manifest-parent-card
-              :fields="fields"
-              v-else-if="isManifestParent"
-              :listColor="colors.info"
-              :manifest="manifestParent"
-            />
-            <library-card
-              :fields="entry"
-              v-else-if="isLibrary"
-              :listColor="colors.info"
-            />
-            <advanced-service-card
-              :fields="entry"
-              v-else-if="isAdvancedService"
-              :listColor="colors.info"
-            />
-            <data-studio-card
-              :fields="entry"
-              v-else-if="isDataStudio"
-              :listColor="colors.info"
-            />
-            <oauth-scope-card
-              :fields="entry"
-              v-else-if="isOauthScope"
-              :listColor="colors.info"
-            />
-            <runtime-version-card
-              :fields="entry"
-              v-else-if="isRuntimeVersion"
-              :listColor="colors.info"
-            />
-            <time-zone-card
-              :fields="entry"
-              v-else-if="isTimeZone"
-              :listColor="colors.info"
-            />
-            <webapp-card
-              :fields="entry"
-              v-else-if="isWebapp"
-              :listColor="colors.info"
-            />
-            <add-on-card
-              :fields="entry"
-              v-else-if="isAddOn"
-              :listColor="colors.info"
-            />
-            <div v-else-if="isRoot">Viewing by {{ viewType }}</div>
-          </v-card-text>
-        </v-card>
-      </div>
+    <div ref="node-info" style="position:absolute" v-if="infoVisible">
+      <v-card :color="colors.info" dark>
+        <v-toolbar color="secondary">
+          <repo-chip :repoName="repoName" :ownerPic="ownerPic" />
+          <v-spacer v-if="repoName"></v-spacer>
+          <repo-info-chip
+            :repoName="repoName"
+            :pic="pic"
+            :infoName="infoName"
+            :infoChildrenCount="infoChildrenCount"
+            :infoChildrenName="infoChildrenName"
+            :iconType="iconType"
+          />
+          <v-spacer></v-spacer>
+          <icons
+            v-if="pinned"
+            name="unpin"
+            @clicked="pinner()"
+            :tip="`unpin ${infoName}`"
+          />
+          <icons
+            v-else
+            name="pin"
+            @clicked="pinner()"
+            :tip="`pin ${infoName}`"
+          />
+        </v-toolbar>
+        <v-card-text>
+          <owner-card
+            :fields="fields"
+            v-if="isOwner"
+            :listColor="colors.info"
+          />
+          <repo-card
+            :fields="fields"
+            v-else-if="isRepo"
+            :listColor="colors.info"
+          />
+          <file-card
+            :fields="fields"
+            v-else-if="isFile"
+            :listColor="colors.info"
+            :manifest="manifest"
+            :repoName="repoName"
+            :repoUrl="repoUrl"
+            :pic="pic"
+            :infoName="infoName"
+            :infoChildrenCount="infoChildrenCount"
+            :infoChildrenName="infoChildrenName"
+            :iconType="iconType"
+            :ownerPic="ownerPic"
+            @pin="pinner(true)"
+          />
+          <manifest-parent-card
+            :fields="fields"
+            v-else-if="isManifestParent"
+            :listColor="colors.info"
+            :manifest="manifestParent"
+          />
+          <library-card
+            :fields="entry"
+            v-else-if="isLibrary"
+            :listColor="colors.info"
+          />
+          <advanced-service-card
+            :fields="entry"
+            v-else-if="isAdvancedService"
+            :listColor="colors.info"
+          />
+          <data-studio-card
+            :fields="entry"
+            v-else-if="isDataStudio"
+            :listColor="colors.info"
+          />
+          <oauth-scope-card
+            :fields="entry"
+            v-else-if="isOauthScope"
+            :listColor="colors.info"
+          />
+          <runtime-version-card
+            :fields="entry"
+            v-else-if="isRuntimeVersion"
+            :listColor="colors.info"
+          />
+          <time-zone-card
+            :fields="entry"
+            v-else-if="isTimeZone"
+            :listColor="colors.info"
+          />
+          <webapp-card
+            :fields="entry"
+            v-else-if="isWebapp"
+            :listColor="colors.info"
+          />
+          <add-on-card
+            :fields="entry"
+            v-else-if="isAddOn"
+            :listColor="colors.info"
+          />
+          <div v-else-if="isRoot">Viewing by {{ viewType }}</div>
+        </v-card-text>
+      </v-card>
     </div>
   </v-container>
 </template>
@@ -157,18 +155,20 @@ export default {
     root: {
       immediate: true,
       handler(val) {
-        console.log('handling', val)
-        if(val) {
+        if (val) {
           this.initSvg();
           this.rebuild();
         }
-      }
+      },
     },
-    
+    resetsvg(val) {
+      if (val) this.initSvg();
+    },
   },
   methods: {
     initSvg() {
-      if(!this.g) {
+      if (!this.g || this.resetsvg) {
+        this.setResetsvg(false);
         this.makeSvg();
 
         this.g = this.svg.append("g").attr("font-size", 10);
@@ -216,11 +216,11 @@ export default {
     handleMouseClick(d3This, e, n) {
       if (!this.svg && !this.svg.node()) return null;
       // first step is to unpin
-      if (this.pinned) this.pinner()
+      if (this.pinned) this.pinner();
       // then move to the new place
-      this.handleMouseOver(d3This, e, n)
+      this.handleMouseOver(d3This, e, n);
       // then repin
-      this.pinner()
+      this.pinner();
     },
     handleMouseOver(d3This, e, n) {
       if (!this.svg && !this.svg.node()) return null;
@@ -255,12 +255,17 @@ export default {
         const top = e.clientY - svgDim.y;
 
         if (tn) {
-  
           const { width } = tn.getBoundingClientRect();
           s.transition()
             .duration(300)
-            .style("left", Math.max(10, ecx - width + 32) + "px")
-            .style("top", (top + 20) + "px");
+            .style(
+              "left",
+              Math.max(
+                10,
+                Math.min(svgDim.width - width - 10, ecx - width + 32)
+              ) + "px"
+            )
+            .style("top", top + 20 + "px");
         }
       });
     },
@@ -329,7 +334,7 @@ export default {
             .on("mouseout", function(e, n) {
               self.handleMouseOut(this, e, n);
             })
-            .on("click",function(e, n) {
+            .on("click", function(e, n) {
               self.handleMouseClick(this, e, n);
             })
             .style("fill", this.colors.vizText)
@@ -364,8 +369,8 @@ export default {
     ...maps.mutations,
   },
   computed: {
-    sv() {
-      return this.vizInfo && this.infoData && this.infoMoused;
+    infoVisible() {
+      return this.root && this.vizInfo && this.infoData && this.infoMoused;
     },
     infoChildrenName() {
       if (this.isFile) {
@@ -506,6 +511,7 @@ export default {
     g: null,
     path: null,
     node: null,
+    drag: false,
   }),
 };
 </script>

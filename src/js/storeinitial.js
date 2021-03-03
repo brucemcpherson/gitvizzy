@@ -2,12 +2,15 @@
 import { gasVizzyInit, delay } from "./gasvizzy";
 import {
   logEvent,
-  getPickerKey,
   signin,
   signinGithub,
-  isGoogleTokenValid,
-  signout
-} from "./fb";
+  signout,
+  gapiInit,
+  getPickerKey,
+  getProjectId,
+  gapiCheckScopes,
+  gapiAdditionalScopes
+} from "./auth";
 import { applyFilters } from "./filtering";
 import { tree, arrangeTreeData } from "./d3prep";
 import { setTokenData, getTokenData } from "./forager";
@@ -59,11 +62,16 @@ const vTypes = [
 
 const _initial = {
   state: {
+    resvg: false,
+    showMessage: null,
+    showError: false,
+    spinning: false,
+    appId: getProjectId(),
+    pickerKey: getPickerKey(),
+    isSignedIn: false,
     treeModel: [],
     pinned: null,
-    pickerKey: getPickerKey(),
     githubToken: null,
-    googleToken: null,
     showPullDialog: false,
     user: null,
     gd: null,
@@ -109,19 +117,28 @@ const _initial = {
     vTypes,
   },
   mutations: {
-    setTreeModel(state, value) { 
-      state.treeModel = value
+    setResetsvg(state, value) {
+      state.resetSvg = value
     },
-     clearTokens(state) {
+    setShowError(state, value) {
+      state.showError = !!value;
+      state.showMessage = value;
+    },
+    setSpinning(state, value) {
+      state.spinning = value;
+    },
+    setIsSignedIn(state, value) {
+      state.isSignedIn = value;
+    },
+    setTreeModel(state, value) {
+      state.treeModel = value;
+    },
+
+    clearTokens(state) {
       state.githubToken = null;
-      state.googleToken = null;
     },
     setGithubToken(state, value) {
-      console.log("setting githubtoken", value);
       state.githubToken = value;
-    },
-    setGoogleToken(state, value) {
-      state.googleToken = value;
     },
     setPickerApiKey(state, value) {
       state.pickerApiKey = value;
@@ -227,17 +244,28 @@ const _initial = {
     },
   },
   getters: {
-    pickerKey() {
-      return getPickerKey();
+    checkScopes(state, getters) {
+      return gapiCheckScopes(getters.isLoggedIn && state.user);
+    },
+    googleToken(state, getters) {
+      const t = getters.isLoggedIn && state.user.getAuthResponse(true);
+      return t && t.access_token;
     },
     isLoggedIn(state) {
-      return Boolean(state.user);
+      return state.user && state.user.isSignedIn();
     },
     userImage(state, getters) {
-      return getters.isLoggedIn ? state.user.photoURL : null;
+      return getters.isLoggedIn
+        ? state.user.getBasicProfile().getImageUrl()
+        : null;
     },
     userName(state, getters) {
-      return getters.isLoggedIn ? state.user.displayName : null;
+      return getters.isLoggedIn ? state.user.getBasicProfile().getName() : null;
+    },
+    userEmail(state, getters) {
+      return getters.isLoggedIn
+        ? state.user.getBasicProfile().getEmail()
+        : null;
     },
     fobOwners(state) {
       return state.fob && state.fob.owners && state.fob.owners.allFiltered();
@@ -250,26 +278,21 @@ const _initial = {
     signout({ commit }) {
       return signout(commit);
     },
-    signin({ commit, dispatch }) {
-      return signin(commit, dispatch);
+    signin() {
+      return signin();
     },
     signinGithub({ commit, dispatch }) {
       return signinGithub(commit, dispatch);
     },
-    newUser({ commit }, value) {
-      return commit("setUser", value);
-    },
     setStoredTokens({ state }) {
-      const { githubToken, googleToken } = state;
-      return setTokenData({ githubToken, googleToken });
+      const { githubToken } = state;
+      return setTokenData({ githubToken });
     },
     getStoredTokens({ commit }) {
       return getTokenData().then((result) => {
-        console.log("getting stored tokend", result);
         if (result) {
-          const { githubToken, googleToken } = result;
+          const { githubToken } = result;
           if (githubToken) commit("setGithubToken", githubToken);
-          if (googleToken) commit("setGoogleToken", googleToken);
         }
       });
     },
@@ -413,18 +436,22 @@ const _initial = {
         value: state.vizInfo,
       });
     },
-    gapi() {
-      gapi.load("picker", () => {
-        console.log("gapi picker loaded");
+    moreScopes({ state }) { 
+      gapiAdditionalScopes(state.user)
+    },
+    gapi({ commit }) {
+      gapi.load("picker:auth2:client", () => {
+        // the gapi modules are loaded
+        // now initialize the auth
+        gapiInit((user) => {
+          // record this user
+          commit("setUser", user);
+        }).catch((error) => {
+          console.log("failed to gapiinit", error);
+        });
       });
     },
-    pickerStuff({ commit, dispatch }) {
-      signin(commit, dispatch);
-    },
-    async isGoogleTokenValid({ state }) {
-      const isit = await isGoogleTokenValid(state.googleToken);
-      return isit
-    },
+
     updateRoot({ commit, state }, force) {
       // this allows re-render of whatever to show before waiting
       // for the length dom update

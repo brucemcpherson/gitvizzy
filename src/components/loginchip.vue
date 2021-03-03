@@ -6,6 +6,7 @@
         <v-icon v-else-if="isLoggedIn">mdi-person</v-icon>
         <icons v-else name="login" unmouse />
       </v-avatar>
+   
     </template>
     <span v-if="isLoggedIn">{{ userName }} - click to sign out</span><span v-else>click to sign in</span>
   </v-tooltip>

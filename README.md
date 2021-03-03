@@ -28,3 +28,8 @@ Filtered view of manifest entry
 
 Filtered view of manifest contents
 ![](./shots/2021-01-26-11-30-40.png)
+
+## scrviz now supports creating apps script projects directly
+
+https://ramblings.mcpher.com/vizzy-scrviz/vizzy-clone-apps-script-github/
+

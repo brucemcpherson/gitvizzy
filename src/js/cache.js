@@ -12,7 +12,6 @@ export const getky = (url) => ky.get(url).json();
 let octokit = null;
 
 export const cacheInit = (store) => {
-  console.log('initializing octolit', store.state.githubToken)
   octokit = new Octokit({
     auth: `token ${store.state.githubToken}`,
     userAgent: "scrviz v1.0.1",
@@ -41,7 +40,7 @@ const getWithWait = (what, tries = 0) => {
     if ((status !== 403 && status !== 429) || tries > 3)
       return Promise.reject(qe);
     const { waitTime } = getRateInfo(error);
-    console.log("....waiting", waitTime);
+
     // try again
     return delay(waitTime).then(() => getWithWait(what, tries + 1));
   });
@@ -65,18 +64,18 @@ const raw = () => {
 
 // cache is using gist now
 export const cacheGet = async () => {
-  // maybe its in local storage 
-  let text = await getCacheData()
+  // maybe its in local storage
+  let text = await getCacheData();
   if (!text) {
     const rawUrl = await raw();
     const response = await ky.get(rawUrl);
     text = await response.text();
     // write that sucker to local storage for next time
-    setCacheData(text).then(() => { 
-      console.log('...wrote cache to local storage')
-    })
-  } else { 
-    console.log('...found github data locally')
+    setCacheData(text).then(() => {
+      console.log("...wrote cache to local storage");
+    });
+  } else {
+    console.log("...found github data locally");
   }
   return text && decompress(text);
 };

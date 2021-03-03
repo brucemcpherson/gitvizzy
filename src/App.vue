@@ -106,11 +106,13 @@
     </v-navigation-drawer>
     <v-main>
       <d3-chart />
+      <error-place />
     </v-main>
   </v-app>
 </template>
 
 <script>
+import errorplace from "@/components/errorplace"
 import statscard from "@/components/statscard";
 import d3chart from "@/components/d3chart";
 import ownerfilter from "@/components/ownerfilter";
@@ -130,6 +132,7 @@ import maps from "@/js/storemaps";
 
 export default {
   components: {
+    "error-place": errorplace,
     "owner-filter": ownerfilter,
     "library-filter": libraryfilter,
     "oauth-scope-filter": oauthscopefilter,
@@ -211,6 +214,7 @@ export default {
       this.sidebarMenu = !this.sidebarMenu;
     },
     refresh() {
+      this.setResetsvg(true);
       this.updateRoot(true);
     },
     ...maps.actions,

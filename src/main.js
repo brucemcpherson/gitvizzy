@@ -4,8 +4,8 @@ import vuetify from "./plugins/vuetify";
 import store from "./js/store";
 import JsonViewer from "vue-json-viewer";
 import { forageInit } from "./js/forager";
-import { initFb, fbuiInit } from "./js/fb";
-import AsyncComputed from "vue-async-computed";
+import { initFb, fbuiInit } from "./js/auth";
+
 
 // local storage
 forageInit();
@@ -19,7 +19,6 @@ fbuiInit(store.dispatch);
 // get any stored tokens
 store.dispatch('getStoredTokens');
 
-Vue.use(AsyncComputed);
 Vue.use(JsonViewer);
 
 import TabVisibility from "@/js/classes/tabvisibility";
