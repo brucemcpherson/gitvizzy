@@ -62,6 +62,7 @@ const vTypes = [
 
 const _initial = {
   state: {
+    urlParams: null,
     resvg: false,
     showMessage: null,
     showError: false,
@@ -117,6 +118,15 @@ const _initial = {
     vTypes,
   },
   mutations: {
+    setUrlParams(state, value) { 
+      state.urlParams = value
+    },
+    setUrlParamsDone(state) { 
+      state.urlParams = {
+        ...state.urlParams,
+        doit: false
+      }
+    },
     setResetsvg(state, value) {
       state.resetSvg = value
     },

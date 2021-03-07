@@ -116,6 +116,16 @@
           ></v-text-field>
         </v-form>
       </v-card-text>
+
+      <v-card-text v-else
+        >You need to select an appsscript.json at a minimum to create a
+        project</v-card-text
+      >
+
+      <v-card-text class="caption">
+        Note: If you get a permission error it's possible the manifest
+        references a library to which you don't have access.
+      </v-card-text>
       <v-card-actions>
         <v-btn
           class="mx-4 mb-2"
@@ -178,7 +188,7 @@ const initialData = () => {
     clipping: false,
     creating: false,
     createdProject: null,
-    currentFolder: null
+    currentFolder: null,
   };
 };
 export default {
@@ -225,12 +235,13 @@ export default {
           });
         })
         .catch((response) => {
-          const error = (response && response.result && response.result.error) || error
+          const error =
+            (response && response.result && response.result.error) || error;
           this.setShowError({
-            message:'Error while writing to Apps Script API',
-            title: 'Failed to create project content',
-            error
-          })
+            message: "Error while writing to Apps Script API",
+            title: "Failed to create project content",
+            error,
+          });
 
           console.log("project failed", response);
         })
@@ -254,7 +265,7 @@ export default {
             content,
           }))
         )
-      )
+      );
     },
     getContent(item) {
       return decorator(item.url).then((r) => {
@@ -292,8 +303,15 @@ export default {
         (this.modelContainerBound && !this.pickedId)
       );
     },
+    isManifestSelected() {
+      return (
+        this.treeModel &&
+        this.treeModel.length &&
+        this.treeModel.find((f) => f.path === "appsscript.json")
+      );
+    },
     isReady() {
-      return this.treeModel && this.treeModel.length;
+      return this.isManifestSelected;
     },
     canClip() {
       return navigator.clipboard && navigator.clipboard.writeText;

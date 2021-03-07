@@ -129,8 +129,10 @@ import repochip from "@/components/repochip";
 import repoinfochip from "@/components/repoinfochip";
 import icons from "@/components/icons";
 import { delayAnimation } from "@/js/fiddly";
+import { itemFind} from "@/js/params";
 
 import * as d3 from "d3";
+const scrollUp = () => window.scrollBy(0, -100);
 
 export default {
   components: {
@@ -222,6 +224,44 @@ export default {
       // then repin
       this.pinner();
     },
+    // moves the view to a specific item
+    // this is when it arrives via direct parameter
+
+    moveToItem({ node, target, type }) {
+     
+      const foundling = itemFind({ node, target, type });
+      if (foundling) {
+        this.handleIntoView(foundling.d3This, () => {
+          const n = d3
+            .select(foundling.d3This)
+            .node()
+            .getBoundingClientRect();
+          this.handleMouseClick(
+            foundling.d3This,
+            {
+              clientX: n.x,
+              clientY: n.y,
+            },
+            foundling.item
+          );
+        });
+      } else {
+        this.setShowError({
+          title: "Couldn't find target item",
+          message: `was looking for ${target} (${type})`
+        })
+        
+      }
+      return foundling;
+    },
+    handleIntoView(element, after) {
+      // this could push it too high so we need to scroll down a bit
+      element.scrollIntoView();
+      this.$nextTick(() => {
+        scrollUp();
+        if (after) this.$nextTick(after);
+      });
+    },
     handleMouseOver(d3This, e, n) {
       if (!this.svg && !this.svg.node()) return null;
 
@@ -273,6 +313,7 @@ export default {
       const svg = this.svg;
       const g = this.g;
       const root = this.root;
+      const self = this;
       // this is slow - there are thousands of nodes ... how to improve it?
       // see if canvas would be a better option
       if (root && svg) {
@@ -308,6 +349,18 @@ export default {
             .data(root.descendants())
             .join("g")
             .attr("transform", (d) => `translate(${d.y},${d.x})`);
+
+          // a direct link will have params
+         
+          if (node && this.urlParams.doit &&  this.urlParams.doit) {
+            this.moveToItem({
+              node,
+              target: this.urlParams.value,
+              type: this.urlParams.type,
+            });
+            // params are just a once off, so mark as done
+            this.setUrlParamsDone();
+          }
         });
 
         await delayAnimation(0, () => {
@@ -323,7 +376,7 @@ export default {
 
         // the purpose of these delays is to get some of the dom updated at least
         // as the whole thing looks like it's not doing anything
-        const self = this;
+
         await delayAnimation(0, () => {
           node.selectAll("text").remove();
           node

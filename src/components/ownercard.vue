@@ -100,23 +100,61 @@
         </v-list-item-icon>
         <v-list-item-content v-html="cleanBio"> </v-list-item-content>
       </v-list-item>
+
+      <v-list-item v-if="directLink">
+        <v-list-item-icon>
+          <icons
+            v-if="canClip"
+            name="copy"
+            :tip="
+              clipping ? 'direct scrviz link copied' : 'copy directscrviz link'
+            "
+            @clicked="clipText(directLink)"
+          />
+          <icons v-else name="id" />
+        </v-list-item-icon>
+        <v-list-item-content
+          ><span>
+            <a :href="directLink" target="_blank">
+              <span class="mr-2">Direct scrviz link to this owner</span>
+            </a></span
+          >
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
   </div>
 </template>
 <script>
 import icons from "@/components/icons";
 import anchorme from "anchorme";
+import { directLink } from "@/js/params";
 export default {
   components: {
     icons,
   },
 
-    
   props: {
     fields: Object,
     listColor: String,
   },
   computed: {
+    canClip() {
+      return navigator.clipboard && navigator.clipboard.writeText;
+    },
+    directLink() {
+      //emulate a class for this kind of data to generate a direct link
+      return directLink({
+        type: "owner",
+        item: {
+          data: {
+            type: "owners",
+            owner: {
+              fields: this.fields,
+            },
+          },
+        },
+      });
+    },
     isHireable() {
       return this.fields && this.fields.hireable;
     },
@@ -124,9 +162,7 @@ export default {
       return this.isHireable ? "hireable" : "hireable-off";
     },
     hireableText() {
-      return this.isHireable
-        ? "Available for hire" : "Not available for hire"
-
+      return this.isHireable ? "Available for hire" : "Not available for hire";
     },
     cleanTwitter() {
       return (
@@ -136,7 +172,6 @@ export default {
       );
     },
     cleanBio() {
-      
       const bio = this.fields && this.fields.bio;
       if (!bio) return null;
       return anchorme({
@@ -144,9 +179,9 @@ export default {
         options: {
           attributes: () => {
             return {
-              target:"_blank",
-              style: "color: #f5f5f5;"
-            }
+              target: "_blank",
+              style: "color: #f5f5f5;",
+            };
           },
         },
         extensions: [
@@ -157,6 +192,19 @@ export default {
         ],
       });
     },
+  },
+  methods: {
+    clipText(value) {
+      this.clipping = false;
+      return navigator.clipboard
+        .writeText(value)
+        .then(() => (this.clipping = true));
+    },
+  },
+  data: () => {
+    return {
+      clipping: false,
+    };
   },
 };
 </script>

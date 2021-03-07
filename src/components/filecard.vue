@@ -94,6 +94,31 @@
           >
         </v-list-item-content>
       </v-list-item>
+      <v-list-item v-if="directLink">
+        <v-list-item-icon>
+          <icons
+            v-if="canClip"
+            name="copy"
+            :tip="
+              clipping
+                ? 'direct scrviz link copied'
+                : 'copy directscrviz link'
+            "
+            @clicked="clipText(directLink)"
+          />
+          <icons v-else name="id" />
+        </v-list-item-icon>
+        <v-list-item-content
+          ><span>
+            <a :href="directLink" target="_blank">
+              <span class="mr-2"
+                >Direct scrviz link to this manifest
+                </span
+              >
+            </a></span
+          >
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
 
     <v-card-title class="subtitle-2">Manifest content</v-card-title>
@@ -189,6 +214,7 @@
 import icons from "@/components/icons";
 import pulldialog from "@/components/pulldialog";
 import maps from "@/js/storemaps";
+import {directLink} from "@/js/params"
 export default {
   components: {
     icons,
@@ -247,6 +273,20 @@ export default {
     ...maps.actions,
   },
   computed: {
+    directLink() {
+      //emulate a class for this kind of data to generate a direct link
+      return directLink ({
+        type: 'manifest',
+        item: {
+          data: {
+            type: 'files',
+            file: {
+              fields: this.fields
+            }
+          }
+        }
+      })
+    },
     denied() {
       return (
         this.checkScopes &&
