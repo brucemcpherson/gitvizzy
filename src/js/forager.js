@@ -21,8 +21,8 @@ export const forageInit = () => {
   });
 };
 
-const getStuff = (frg, key, schemaVersion) =>
-  frg.getItem(key).then((r) => {
+const getStuff = (frg, key, schemaVersion, force) =>
+  force ? Promise.resolve(null) : frg.getItem(key).then((r) => {
     return (
       r &&
       r.value &&
@@ -33,7 +33,7 @@ const getStuff = (frg, key, schemaVersion) =>
   });
 
 // get from cache if it hasnt expired and if its a good version
-export const getCacheData = () => getStuff(forager, cacheKey, schemaVersion);
+export const getCacheData = (force) => getStuff(forager, cacheKey, schemaVersion, force);
 
 // get tokens from cache
 export const getTokenData = () =>

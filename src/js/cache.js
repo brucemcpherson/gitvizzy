@@ -63,9 +63,9 @@ const raw = () => {
 };
 
 // cache is using gist now
-export const cacheGet = async () => {
+export const cacheGet = async (force=false) => {
   // maybe its in local storage
-  let text = await getCacheData();
+  let text = await  getCacheData(force);
   if (!text) {
     const rawUrl = await raw();
     const response = await ky.get(rawUrl);

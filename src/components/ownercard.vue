@@ -121,6 +121,38 @@
           >
         </v-list-item-content>
       </v-list-item>
+      <v-list-item v-for="(row, i) in scrvizRows" :key="i">
+        <v-list-item-icon>
+          <icons
+            :tip="
+              canClip
+                ? clipping
+                  ? `${row.link ? 'copied link' : 'copied info'}`
+                  : `${row.link ? 'copy link' : 'copy info'}`
+                : null
+            "
+            :mdi="!!row.icon"
+            :name="row.icon ||'info'"
+            @clicked="clipText(row.link || row.description)"
+          />
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-tooltip :disabled="!row.tip" bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <span v-bind="attrs" v-on="on">
+                <span v-if="row.link">
+                  <a :href="row.link" target="_blank">
+                    <span class="mr-2">{{ row.description || row.link }}</span>
+                  </a></span
+                ><span v-else
+                  >{{row.description|| 'extra scrviz profile info'</span
+                >
+              </span>
+            </template>
+            <span>{{ row.tip }}</span>
+          </v-tooltip>
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
   </div>
 </template>
@@ -171,6 +203,12 @@ export default {
         this.fields.twitter_username.replace(/^@/, "")
       );
     },
+    scrvizOwner() {
+      return this.fields && this.fields.scrviz && this.fields.scrviz.owner;
+    },
+    scrvizRows() {
+      return ((this.scrvizOwner && this.scrvizOwner.rows) || []).filter(f=>f.visible);
+    },
     cleanBio() {
       const bio = this.fields && this.fields.bio;
       if (!bio) return null;
@@ -195,6 +233,7 @@ export default {
   },
   methods: {
     clipText(value) {
+      if (!this.canClip) return null;
       this.clipping = false;
       return navigator.clipboard
         .writeText(value)

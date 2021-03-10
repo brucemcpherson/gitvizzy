@@ -62,6 +62,7 @@ const vTypes = [
 
 const _initial = {
   state: {
+    gettingData: false,
     urlParams: null,
     resvg: false,
     showMessage: null,
@@ -114,10 +115,15 @@ const _initial = {
       dotNoChildren: "pink",
       vizTextHovered: "#C2185B",
       vizText: "#212121",
+      gettingData: 'red',
+      making: 'orange'
     },
     vTypes,
   },
   mutations: {
+    setGettingData(state, value) { 
+      state.gettingData = value
+    },
     setUrlParams(state, value) { 
       state.urlParams = value
     },
@@ -254,6 +260,9 @@ const _initial = {
     },
   },
   getters: {
+    dataColor(state) { 
+      return state.gettingData ? state.colors.gettingData : (state.making ? state.colors.making : 'accent')
+    },
     checkScopes(state, getters) {
       return gapiCheckScopes(getters.isLoggedIn && state.user);
     },
@@ -306,10 +315,11 @@ const _initial = {
         }
       });
     },
-    vizzyInit({ commit, dispatch }) {
+    vizzyInit({ commit, dispatch }, force) {
       commit("setMaking", true);
-
-      return gasVizzyInit().then(({ gd, mf, timestamp, dob, fob }) => {
+      commit("setGettingData", true)
+      return gasVizzyInit(force).then(({ gd, mf, timestamp, dob, fob }) => {
+        commit("setGettingData", false)
         commit("setGd", gd);
         commit("setMf", mf);
         commit("setCacheTimestamp", timestamp);

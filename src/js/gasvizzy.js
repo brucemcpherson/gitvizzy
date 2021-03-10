@@ -5,8 +5,8 @@ export const delay = require("delay");
 const { initFiltering } = require("./filtering");
 
 // preferably get from redis
-const getFromCache = async () => {
-  return cacheGet().then((result) => {
+const getFromCache = async (force) => {
+  return cacheGet(force).then((result) => {
     const { value, timestamp } = result || {};
     if (value) {
       console.log(
@@ -23,8 +23,8 @@ const getFromCache = async () => {
   });
 };
 
-export const gasVizzyInit = () => {
-  return getFromCache().then(({ gd, timestamp }) => {
+export const gasVizzyInit = (force) => {
+  return getFromCache(force).then(({ gd, timestamp }) => {
     const mf = enumerateManifests(gd);
     const { dob, fob } = initFiltering({ gd, mf });
     // for convenience we'll put a pointer to the content in the files section

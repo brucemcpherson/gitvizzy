@@ -12,9 +12,12 @@
           :color="colors.bigTree"
           >mdi-family-tree</v-icon
         >
-
+        <v-icon v-else-if="mdi" @click="emit()">{{ name }}</v-icon>
         <v-icon v-else-if="name === 'json'" @click="emit()"
           >mdi-code-json</v-icon
+        >
+        <v-icon v-else-if="name === 'info'" @click="emit()"
+          >mdi-information</v-icon
         >
         <v-icon v-else-if="name === 'filter-off'" @click="emit()"
           >mdi-filter-off</v-icon
@@ -194,6 +197,7 @@ export default {
     unmouse: Boolean,
     url: String,
     avatar: Boolean,
+    mdi: Boolean
   },
 };
 </script>

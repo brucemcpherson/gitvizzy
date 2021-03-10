@@ -13,7 +13,7 @@
 
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-chip v-on="on" color="accent" class="ml-2 mr-2">
+          <v-chip v-on="on" :color="dataColor" class="ml-2 mr-2">
             <span class="mr-1" v-if="leaves">{{ leaves }} nodes</span>
           </v-chip>
         </template>
@@ -214,8 +214,8 @@ export default {
       this.sidebarMenu = !this.sidebarMenu;
     },
     refresh() {
-      this.setResetsvg(true);
-      this.updateRoot(true);
+      // force a fetch ie. no local cache
+      this.vizzyInit(true)
     },
     ...maps.actions,
     ...maps.mutations,

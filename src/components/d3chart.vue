@@ -173,7 +173,7 @@ export default {
         this.setResetsvg(false);
         this.makeSvg();
 
-        this.g = this.svg.append("g").attr("font-size", 10);
+        this.g = this.svg.append("g").attr("font-size", 12);
 
         this.link = this.g
           .append("g")
@@ -216,7 +216,8 @@ export default {
         .style("font-size", "1em");
     },
     handleMouseClick(d3This, e, n) {
-      if (!this.svg && !this.svg.node()) return null;
+      // dohh! if (!this.svg && !this.svg.node()) return null;
+      if (!this.svg || !this.svg.node()) return null;
       // first step is to unpin
       if (this.pinned) this.pinner();
       // then move to the new place
