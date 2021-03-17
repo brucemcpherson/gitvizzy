@@ -116,7 +116,8 @@ const _initial = {
       vizTextHovered: "#C2185B",
       vizText: "#212121",
       gettingData: 'red',
-      making: 'orange'
+      making: 'orange',
+      tagChip: 'secondary'
     },
     vTypes,
   },

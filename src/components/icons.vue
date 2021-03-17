@@ -16,6 +16,9 @@
         <v-icon v-else-if="name === 'json'" @click="emit()"
           >mdi-code-json</v-icon
         >
+        <v-icon v-else-if="name === 'tags'" @click="emit()"
+          >mdi-tag-multiple</v-icon
+        >
         <v-icon v-else-if="name === 'info'" @click="emit()"
           >mdi-information</v-icon
         >
@@ -197,7 +200,7 @@ export default {
     unmouse: Boolean,
     url: String,
     avatar: Boolean,
-    mdi: Boolean
+    mdi: Boolean,
   },
 };
 </script>

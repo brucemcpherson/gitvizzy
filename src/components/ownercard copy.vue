@@ -1,15 +1,13 @@
 <template>
   <div>
-    <v-list :color="listColor" dense :max-width="maxWidth">
+    <v-list :color="listColor" dense  :max-width="maxWidth">
       <v-list-item>
         <v-list-item-avatar>
           <img :src="fields.avatar_url" />
         </v-list-item-avatar>
         <v-list-item-content>
           <v-list-item-title>{{ fields.login }}</v-list-item-title>
-          <v-list-item-subtitle style="max-width:100px;">{{
-            fields.name
-          }}</v-list-item-subtitle>
+          <v-list-item-subtitle style="max-width:100px;">{{ fields.name }}</v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
 
@@ -96,13 +94,13 @@
         </v-list-item-content>
       </v-list-item>
 
-      <v-list-item v-if="fields.bio">
+      <v-list-item v-if="fields.bio && cleanBio">
         <v-list-item-icon>
           <icons name="bio" />
         </v-list-item-icon>
         <v-list-item-content>
-          <v-list-item-subtitle>
-            <span v-html="cleanBio"></span>
+          <v-list-item-subtitle v-for="(b, i) in cleanBio" :key="i"
+            ><span>{{ b }}</span>
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
@@ -159,19 +157,16 @@
           </v-tooltip>
         </v-list-item-content>
       </v-list-item>
-      <tag-item :tags="tags" />
     </v-list>
   </div>
 </template>
 <script>
 import icons from "@/components/icons";
-import tagitem from "@/components/tagitem";
 import { directLink } from "@/js/params";
 import anchorme from "anchorme";
 export default {
   components: {
     icons,
-    "tag-item": tagitem,
   },
 
   props: {
@@ -179,6 +174,9 @@ export default {
     listColor: String,
   },
   computed: {
+    maxListWidth() {
+      return 200;
+    },
     canClip() {
       return navigator.clipboard && navigator.clipboard.writeText;
     },
@@ -212,11 +210,8 @@ export default {
         this.fields.twitter_username.replace(/^@/, "")
       );
     },
-    tags() {
-      return this.scrvizOwner && this.scrvizOwner.tags
-    },
     scrvizOwner() {
-      return this.fields && this.fields.scrviz && this.fields.scrviz.owner
+      return this.fields && this.fields.scrviz && this.fields.scrviz.owner;
     },
     scrvizRows() {
       return ((this.scrvizOwner && this.scrvizOwner.rows) || []).filter(
@@ -247,8 +242,22 @@ export default {
         ],
       });
     },
+  
   },
   methods: {
+    textSplitter(text) {
+      return text
+        .replace(/\r/g, "")
+        .trim()
+        .split(/\n/)
+        .reduce((p, c) => {
+          return p.concat(
+            c
+              .replace(/\s+/, " ")
+              .match(new RegExp(".{1," + this.maxListWidth + "}", "g"))
+          );
+        }, []);
+    },
     clipText(value) {
       if (!this.canClip) return null;
       this.clipping = false;
@@ -278,5 +287,8 @@ a:active {
 }
 a:link {
   color: #f5f5f5;
+}
+.v-list-item__subtitle {
+  max-width:400px;
 }
 </style>

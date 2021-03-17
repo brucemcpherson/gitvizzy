@@ -34,6 +34,38 @@
           >
         </v-list-item-content>
       </v-list-item>
+      <v-list-item v-for="(row, i) in scrvizRows" :key="i">
+        <v-list-item-icon>
+          <icons
+            :tip="
+              canClip
+                ? clipping
+                  ? `${row.link ? 'copied link' : 'copied info'}`
+                  : `${row.link ? 'copy link' : 'copy info'}`
+                : null
+            "
+            :mdi="!!row.icon"
+            :name="row.icon || 'info'"
+            @clicked="clipText(row.link || row.description)"
+          />
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-tooltip :disabled="!row.tip" bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <span v-bind="attrs" v-on="on">
+                <span v-if="row.link">
+                  <a :href="row.link" target="_blank">
+                    <span class="mr-2">{{ row.description || row.link }}</span>
+                  </a></span
+                ><span v-else
+                  >{{row.description|| 'extra scrviz profile info'</span
+                >
+              </span>
+            </template>
+            <span>{{ row.tip }}</span>
+          </v-tooltip>
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
   </div>
 </template>
@@ -63,6 +95,14 @@ export default {
     },
   },
   computed: {
+    scrvizRepo() {
+      return this.fields && this.fields.scrviz && this.fields.scrviz.repo;
+    },
+    scrvizRows() {
+      return ((this.scrvizRepo && this.scrvizRepo.rows) || []).filter(
+        (f) => f.visible
+      );
+    },
     canClip() {
       return navigator.clipboard && navigator.clipboard.writeText;
     },

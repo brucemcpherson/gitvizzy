@@ -19,7 +19,7 @@ export const forageInit = () => {
     storeName: "scrviztokens",
     description: "for scrviz tokens",
   });
-};
+};  
 
 const getStuff = (frg, key, schemaVersion, force) =>
   force ? Promise.resolve(null) : frg.getItem(key).then((r) => {

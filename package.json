@@ -13,6 +13,7 @@
   "dependencies": {
     "@octokit/rest": "^18.2.0",
     "anchorme": "^2.1.2",
+    "canvg": "^3.0.7",
     "core-js": "^3.6.5",
     "crossfilter2": "^1.5.4",
     "d3": "^6.3.1",

@@ -3,9 +3,9 @@
     <v-overlay :value="making">
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
-    
+    <canvas id="tidy-tree-canvas"></canvas>
     <div id="tidy-tree" style="width:100%;" v-resize="resize"></div>
-   
+
     <div ref="node-info" style="position:absolute" v-if="infoVisible">
       <v-card :color="colors.info" dark>
         <v-toolbar color="secondary">
@@ -131,10 +131,28 @@ import repochip from "@/components/repochip";
 import repoinfochip from "@/components/repoinfochip";
 import icons from "@/components/icons";
 import { delayAnimation } from "@/js/fiddly";
-import { itemFind} from "@/js/params";
-
+import { itemFind } from "@/js/params";
+import Canvg from "canvg";
 import * as d3 from "d3";
 const scrollUp = () => window.scrollBy(0, -100);
+const toCanvas = ({ canvas, svgWrapper, boxDims, cg = null }) => {
+  // clean up the text of the svg
+  const svgHtml =
+    svgWrapper && svgWrapper.innerHTML.replace(/\r?\n|\r/g, "").trim();
+  console.log(boxDims);
+  const context = canvas.getContext("2d");
+  // clear previous incarnation
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  // clear to
+  canvas.width = boxDims.width;
+  canvas.height = boxDims.height;
+
+  if (cg) cg.stop();
+
+  const v = Canvg.fromString(context, svgHtml);
+  v.start();
+  return v;
+};
 
 export default {
   components: {
@@ -188,6 +206,7 @@ export default {
           .append("g")
           .attr("stroke-linejoin", "round")
           .attr("stroke-width", 3);
+
       }
     },
     pinner(force) {
@@ -231,7 +250,6 @@ export default {
     // this is when it arrives via direct parameter
 
     moveToItem({ node, target, type }) {
-     
       const foundling = itemFind({ node, target, type });
       if (foundling) {
         this.handleIntoView(foundling.d3This, () => {
@@ -251,9 +269,8 @@ export default {
       } else {
         this.setShowError({
           title: "Couldn't find target item",
-          message: `was looking for ${target} (${type})`
-        })
-        
+          message: `was looking for ${target} (${type})`,
+        });
       }
       return foundling;
     },
@@ -354,8 +371,8 @@ export default {
             .attr("transform", (d) => `translate(${d.y},${d.x})`);
 
           // a direct link will have params
-         
-          if (node && this.urlParams.doit &&  this.urlParams.doit) {
+
+          if (node && this.urlParams.doit && this.urlParams.doit) {
             this.moveToItem({
               node,
               target: this.urlParams.value,
@@ -406,6 +423,13 @@ export default {
             .clone(true)
             .lower()
             .attr("stroke", "white");
+        // make canvas of all that
+            self.cg = toCanvas({
+              canvas: self.canvas,
+              svgWrapper: self.shadow,
+              boxDims: self.svg.node().viewBox.baseVal,
+              cg: self.cg
+            });
           // signal it's all over
           this.setMaking(false);
         });
@@ -413,14 +437,18 @@ export default {
         this.setInfoData(null);
       }
 
+
       d3.select("#node-info")
         .style("left", "0px")
         .style("top", "0px")
         .style("min-width", "160px");
     },
     makeSvg() {
-      const sel = d3.select("#tidy-tree");
-      this.svg = sel.append("svg");
+      //const sel = d3.select("#tidy-tree");
+      this.svg = d3.create("svg")
+      this.canvas = document.getElementById("tidy-tree-canvas");
+      this.shadow = document.createElement("custom");
+      this.shadow.append(this.svg.node());
     },
     ...maps.mutations,
   },
@@ -568,6 +596,9 @@ export default {
     path: null,
     node: null,
     drag: false,
+    cg: null,
+    canvas: null,
+    shadow: null
   }),
 };
 </script>
