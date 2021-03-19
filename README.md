@@ -1,9 +1,5 @@
 <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css">
-<style type="text/css">
-.mditextcolor {
-    color: tomato;
-}
-</style>
+
 
 There are so many Apps Script projects out there where the source code is published on Github, but it’s hard to find what you want. Whether it’s a library, an example of an add-on, how to use an advanced service, or just see who is working on what. I fugured it would be nice if we had a searchable visualization of everything that’s public.
 
@@ -65,56 +61,56 @@ rows: [
 
 | name                                                          | represents   |
 | ------------------------------------------------------------- | ------------ |
-| <span class="mditextcolor mdi mdi-code-json"></span>                  | json         |
-| <span class="mditextcolor mdi mdi-tag-multiple"></span>                    | tags         |
-| <span class="mditextcolor mdi mdi-microsoft-excel"></span>                 | excel        |
-| <span class="mditextcolor mdi mdi-microsoft-word"></span>                  | word         |
-| <span class="mditextcolor mdi mdi-microsoft-office"></span>                | office       |
-| <span class="mditextcolor mdi mdi-microsoft-windows"></span>               | windows      |
-| <span class="mditextcolor mdi mdi-youtube"></span>                         | youtube      |
-| <span class="mditextcolor mdi mdi-linkedin"></span>                        | linkedin     |
-| <span class="mditextcolor mdi mdi-information"></span>                     | info         |
-| <span class="mditextcolor mdi mdi-filter-off"></span>                      | filter-off   |
-| <span class="mditextcolor mdi mdi-filter"></span>                          | filter-on    |
-| <span class="mditextcolor mdi mdi-open-in-new"></span>                     | open         |
-| <span class="mditextcolor mdi mdi-office-building"></span>                 | company      |
-| <span class="mditextcolor mdi mdi-microsoft-word"></span>                  | word         |
-| <span class="mditextcolor mdi mdi-microsoft-office"></span>                | office       |
-| <span class="mditextcolor mdi mdi-microsoft-windows"></span>               | windows      |
-| <span class="mditextcolor mdi mdi-youtube"></span>                         | youtube      |
-| <span class="mditextcolor mdi mdi-linkedin"></span>                        | linkedin     |
-| <span class="mditextcolor mdi mdi-information"></span>                     | info         |
-| <span class="mditextcolor mdi mdi-map-marker"></span>                      | location     |
-| <span class="mditextcolor mdi mdi-email"></span>                           | email        |
-| <span class="mditextcolor mdi mdi-briefcase"></span>                       | files        |
-| <span class="mditextcolor mdi mdi-file"></span>                            | file         |
-| <span class="mditextcolor mdi mdi-github"></span>                          | github       |
-| <span class="mditextcolor mdi mdi-package-variant"></span>                 | clasp        |
-| <span class="mditextcolor mdi mdi-table-eye"></span>                       | stats        |
-| <span class="mditextcolor mdi mdi-web"></span>                             | webapp       |
-| <span class="mditextcolor mdi mdi-account-key"></span>                     | access       |
-| <span class="mditextcolor mdi mdi-comment"></span>                         | viz-info     |
-| <span class="mditextcolor mdi mdi-folder"></span>                          | repos        |
-| <span class="mditextcolor mdi mdi-database"></span>                        | libraries    |
-| <span class="mditextcolor mdi mdi-twitter"></span>                         | twitter      |
-| <span class="mditextcolor mdi mdi-google-maps"></span>                     | maps         |
-| <span class="mditextcolor mdi mdi-bio"></span>                             | bio          |
-| <span class="mditextcolor mdi mdi-cash-multiple"></span>                   | fees         |
-| <span class="mditextcolor mdi mdi-lifebuoy"></span>                        | support      |
-| <span class="mditextcolor mdi mdi-text"></span>                            | text         |
-| <span class="mditextcolor mdi mdi-cash-multiple"></span>                   | fees         |
-| <span class="mditextcolor mdi mdi-currency-usd"></span>                    | hireable     |
-| <span class="mditextcolor mdi mdi-currency-usd-off"></span>                | hireable-off |
-| <span class="mditextcolor mdi mdi-text"></span>                            | text         |
-| <span class="mditextcolor mdi mdi-account-group"></span>                   | followers    |
-| <span class="mditextcolor mdi mdi-counter"></span>                         | version      |
-| <span class="mditextcolor mdi mdi-feather"></span>                         | symbol       |
-| <span class="mditextcolor mdi mdi-blogger"></span>                         | blog         |
-| <span class="mditextcolor mdi mdi-identifier"></span>                      | id           |
-| <span class="mditextcolor mdi mdi-lock-plus"></span>                       | auth         |
-| <span class="mditextcolor mdi mdi-language-html5"></span>                  | html         |
-| <span class="mditextcolor mdi mdi-semantic-web"></span>                    | scrviz       |
-| <span class="mditextcolor mdi mdi-phone"></span>                           | phone        |
+| <span class="mdi mdi-code-json" style="color:blue;" style="color:tomato;"></span>                  | json         |
+| <span class="mdi mdi-tag-multiple" style="color:tomato;"></span>                    | tags         |
+| <span class="mdi mdi-microsoft-excel" style="color:tomato;"></span>                 | excel        |
+| <span class="mdi mdi-microsoft-word" style="color:tomato;"></span>                  | word         |
+| <span class="mdi mdi-microsoft-office" style="color:tomato;"></span>                | office       |
+| <span class="mdi mdi-microsoft-windows" style="color:tomato;"></span>               | windows      |
+| <span class="mdi mdi-youtube" style="color:tomato;"></span>                         | youtube      |
+| <span class="mdi mdi-linkedin" style="color:tomato;"></span>                        | linkedin     |
+| <span class="mdi mdi-information" style="color:tomato;"></span>                     | info         |
+| <span class="mdi mdi-filter-off" style="color:tomato;"></span>                      | filter-off   |
+| <span class="mdi mdi-filter" style="color:tomato;"></span>                          | filter-on    |
+| <span class="mdi mdi-open-in-new" style="color:tomato;"></span>                     | open         |
+| <span class="mdi mdi-office-building" style="color:tomato;"></span>                 | company      |
+| <span class="mdi mdi-microsoft-word" style="color:tomato;"></span>                  | word         |
+| <span class="mdi mdi-microsoft-office" style="color:tomato;"></span>                | office       |
+| <span class="mdi mdi-microsoft-windows" style="color:tomato;"></span>               | windows      |
+| <span class="mdi mdi-youtube" style="color:tomato;"></span>                         | youtube      |
+| <span class="mdi mdi-linkedin" style="color:tomato;"></span>                        | linkedin     |
+| <span class="mdi mdi-information" style="color:tomato;"></span>                     | info         |
+| <span class="mdi mdi-map-marker" style="color:tomato;"></span>                      | location     |
+| <span class="mdi mdi-email" style="color:tomato;"></span>                           | email        |
+| <span class="mdi mdi-briefcase" style="color:tomato;"></span>                       | files        |
+| <span class="mdi mdi-file" style="color:tomato;"></span>                            | file         |
+| <span class="mdi mdi-github" style="color:tomato;"></span>                          | github       |
+| <span class="mdi mdi-package-variant" style="color:tomato;"></span>                 | clasp        |
+| <span class="mdi mdi-table-eye" style="color:tomato;"></span>                       | stats        |
+| <span class="mdi mdi-web" style="color:tomato;"></span>                             | webapp       |
+| <span class="mdi mdi-account-key" style="color:tomato;"></span>                     | access       |
+| <span class="mdi mdi-comment" style="color:tomato;"></span>                         | viz-info     |
+| <span class="mdi mdi-folder" style="color:tomato;"></span>                          | repos        |
+| <span class="mdi mdi-database" style="color:tomato;"></span>                        | libraries    |
+| <span class="mdi mdi-twitter" style="color:tomato;"></span>                         | twitter      |
+| <span class="mdi mdi-google-maps" style="color:tomato;"></span>                     | maps         |
+| <span class="mdi mdi-bio" style="color:tomato;"></span>                             | bio          |
+| <span class="mdi mdi-cash-multiple" style="color:tomato;"></span>                   | fees         |
+| <span class="mdi mdi-lifebuoy" style="color:tomato;"></span>                        | support      |
+| <span class="mdi mdi-text" style="color:tomato;"></span>                            | text         |
+| <span class="mdi mdi-cash-multiple" style="color:tomato;"></span>                   | fees         |
+| <span class="mdi mdi-currency-usd" style="color:tomato;"></span>                    | hireable     |
+| <span class="mdi mdi-currency-usd-off" style="color:tomato;"></span>                | hireable-off |
+| <span class="mdi mdi-text" style="color:tomato;"></span>                            | text         |
+| <span class="mdi mdi-account-group" style="color:tomato;"></span>                   | followers    |
+| <span class="mdi mdi-counter" style="color:tomato;"></span>                         | version      |
+| <span class="mdi mdi-feather" style="color:tomato;"></span>                         | symbol       |
+| <span class="mdi mdi-blogger" style="color:tomato;"></span>                         | blog         |
+| <span class="mdi mdi-identifier" style="color:tomato;"></span>                      | id           |
+| <span class="mdi mdi-lock-plus" style="color:tomato;"></span>                       | auth         |
+| <span class="mdi mdi-language-html5" style="color:tomato;"></span>                  | html         |
+| <span class="mdi mdi-semantic-web" style="color:tomato;"></span>                    | scrviz       |
+| <span class="mdi mdi-phone" style="color:tomato;"></span>                           | phone        |
 | <img src="./src/assets/appsscript.png" height="20"/>          | appsscript   |
 | <img src="./src/assets/GoogleDrive_2020.png" height="20"/>    | drive        |
 | <img src="./src/assets/Sheets_2020.png" height="20"/>         | sheets       |
