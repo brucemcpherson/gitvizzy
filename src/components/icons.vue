@@ -19,6 +19,24 @@
         <v-icon v-else-if="name === 'tags'" @click="emit()"
           >mdi-tag-multiple</v-icon
         >
+        <v-icon v-else-if="name === 'excel'" @click="emit()"
+          >mdi-microsoft-excel</v-icon
+        >
+        <v-icon v-else-if="name === 'word'" @click="emit()"
+          >mdi-microsoft-word</v-icon
+        >
+        <v-icon v-else-if="name === 'windows'" @click="emit()"
+          >mdi-microsoft-windows</v-icon
+        >
+        <v-icon v-else-if="name === 'office'" @click="emit()"
+          >mdi-microsoft-office</v-icon
+        >
+        <v-icon v-else-if="name === 'youtube'" @click="emit()"
+          >mdi-youtube</v-icon
+        >
+        <v-icon v-else-if="name === 'linkedin'" @click="emit()"
+          >mdi-linkedin</v-icon
+        >
         <v-icon v-else-if="name === 'info'" @click="emit()"
           >mdi-information</v-icon
         >
@@ -109,8 +127,14 @@
         <v-icon v-else-if="name === 'twitter'" @click="emit()"
           >mdi-twitter</v-icon
         >
+        <v-icon v-else-if="name === 'maps'" @click="emit()"
+          >mdi-google-maps</v-icon
+        >
         <v-icon v-else-if="name === 'bio'" @click="emit()"
-          >mdi-text-account</v-icon
+          >mdi-bio</v-icon
+        >
+                <v-icon v-else-if="name === 'phone'" @click="emit()"
+          >mdi-phone</v-icon
         >
         <v-icon v-else-if="name === 'fees'" @click="emit()"
           >mdi-cash-multiple</v-icon
@@ -138,7 +162,7 @@
         <v-icon v-else-if="name === 'symbol'" @click="emit()"
           >mdi-feather</v-icon
         >
-        <v-icon v-else-if="name === 'blog'" @click="emit()">mdi-web</v-icon>
+        <v-icon v-else-if="name === 'blog'" @click="emit()">mdi-blogger</v-icon>
         <v-icon v-else-if="name === 'copy'" @click="emit()"
           >mdi-content-copy</v-icon
         >
@@ -160,10 +184,35 @@
         <v-avatar size="24" tile v-else-if="name === 'drive'" @click="emit()">
           <img src="../assets/GoogleDrive_2020.png" />
         </v-avatar>
+        <v-avatar size="24" tile v-else-if="name === 'sheets'" @click="emit()">
+          <img src="../assets/Sheets_2020.png" />
+        </v-avatar>
+        <v-avatar size="24" tile v-else-if="name === 'docs'" @click="emit()">
+          <img src="../assets/Docs_2020.png" />
+        </v-avatar>
+        <v-avatar
+          size="24"
+          tile
+          v-else-if="name === 'calendar'"
+          @click="emit()"
+        >
+          <img src="../assets/GoogleCalendar_2020.png" />
+        </v-avatar>
+        <v-avatar size="24" tile v-else-if="name === 'gmail'" @click="emit()">
+          <img src="../assets/Gmail_2020.png" />
+        </v-avatar>
+        <v-avatar size="24" tile v-else-if="name === 'gcp'" @click="emit()">
+          <img src="../assets/gcp.png" />
+        </v-avatar>
+        <v-avatar size="24" tile v-else-if="name === 'slides'" @click="emit()">
+          <img src="../assets/Slides_2020.png" />
+        </v-avatar>
         <v-icon v-else-if="name === 'html'" @click="emit()"
           >mdi-language-html5</v-icon
         >
-
+        <v-icon v-else-if="name === 'scrviz'" @click="emit()"
+          >mdi-semantic-web</v-icon
+        >
         <v-icon v-else @click="emit()">mdi-help"</v-icon>
       </span>
     </template>

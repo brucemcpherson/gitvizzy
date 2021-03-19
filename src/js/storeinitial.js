@@ -117,7 +117,7 @@ const _initial = {
       vizText: "#212121",
       gettingData: 'red',
       making: 'orange',
-      tagChip: 'secondary'
+      tagChip: 'pink accent-4'
     },
     vTypes,
   },

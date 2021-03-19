@@ -14,7 +14,7 @@
           >
             <template v-slot:activator="{ on, attrs }">
               <span v-bind="attrs" v-on="on">
-                <v-chip color="colors.tagChip">
+                <v-chip :color="colors.tagChip">
                   <icons
                     :tip="
                       canClip
@@ -23,7 +23,7 @@
                           : `${row.link ? 'copy link' : 'copy info'}`
                         : null
                     "
-                    :mdi="!!row.icon"
+                    :mdi="!!row.icon && row.icon.slice(0, 4) === 'mdi-'"
                     :name="row.icon || 'info'"
                     @clicked="clipText(row.link || row.description)"
                   /><span class="ml-1">

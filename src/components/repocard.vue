@@ -44,7 +44,7 @@
                   : `${row.link ? 'copy link' : 'copy info'}`
                 : null
             "
-            :mdi="!!row.icon"
+            :mdi="!!row.icon && row.icon.slice(0,4)==='mdi-'"
             :name="row.icon || 'info'"
             @clicked="clipText(row.link || row.description)"
           />
@@ -66,16 +66,18 @@
           </v-tooltip>
         </v-list-item-content>
       </v-list-item>
+      <tag-item :tags="tags" />
     </v-list>
   </div>
 </template>
 <script>
 import icons from "@/components/icons";
 import { directLink } from "@/js/params";
-
+import tagitem from "@/components/tagitem";
 export default {
   components: {
     icons,
+    "tag-item": tagitem,
   },
   props: {
     fields: Object,
@@ -95,6 +97,9 @@ export default {
     },
   },
   computed: {
+    tags() {
+      return this.scrvizRepo && this.scrvizRepo.tags;
+    },
     scrvizRepo() {
       return this.fields && this.fields.scrviz && this.fields.scrviz.repo;
     },

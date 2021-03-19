@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-list :color="listColor" dense :max-width="maxWidth">
+    <v-list :color="listColor" dense>
       <v-list-item>
         <v-list-item-avatar>
           <img :src="fields.avatar_url" />
@@ -137,7 +137,7 @@
                   : `${row.link ? 'copy link' : 'copy info'}`
                 : null
             "
-            :mdi="!!row.icon"
+            :mdi="!!row.icon && row.icon.slice(0,4)==='mdi-'"
             :name="row.icon || 'info'"
             @clicked="clipText(row.link || row.description)"
           />

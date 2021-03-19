@@ -3,9 +3,9 @@
     <v-overlay :value="making">
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
-    
+
     <div id="tidy-tree" style="width:100%;" v-resize="resize"></div>
-   
+
     <div ref="node-info" style="position:absolute" v-if="infoVisible">
       <v-card :color="colors.info" dark>
         <v-toolbar color="secondary">
@@ -131,7 +131,7 @@ import repochip from "@/components/repochip";
 import repoinfochip from "@/components/repoinfochip";
 import icons from "@/components/icons";
 import { delayAnimation } from "@/js/fiddly";
-import { itemFind} from "@/js/params";
+import { itemFind } from "@/js/params";
 
 import * as d3 from "d3";
 const scrollUp = () => window.scrollBy(0, -100);
@@ -231,7 +231,6 @@ export default {
     // this is when it arrives via direct parameter
 
     moveToItem({ node, target, type }) {
-     
       const foundling = itemFind({ node, target, type });
       if (foundling) {
         this.handleIntoView(foundling.d3This, () => {
@@ -251,9 +250,8 @@ export default {
       } else {
         this.setShowError({
           title: "Couldn't find target item",
-          message: `was looking for ${target} (${type})`
-        })
-        
+          message: `was looking for ${target} (${type})`,
+        });
       }
       return foundling;
     },
@@ -334,56 +332,71 @@ export default {
 
         let node = null;
 
-        await delayAnimation(0, () => {
-          this.link
-            .selectAll("path")
-            .data(root.links())
-            .join("path")
-            .attr(
-              "d",
-              d3
-                .linkHorizontal()
-                .x((d) => d.y)
-                .y((d) => d.x)
-            );
+        // await delayAnimation(0, () => {
+        this.link
+          .selectAll("path")
+          .data(root.links())
+          .join("path")
+          .attr(
+            "d",
+            d3
+              .linkHorizontal()
+              .x((d) => d.y)
+              .y((d) => d.x)
+          );
 
-          node = this.node
-            .selectAll("g")
-            .data(root.descendants())
-            .join("g")
-            .attr("transform", (d) => `translate(${d.y},${d.x})`);
+        node = this.node
+          .selectAll("g")
+          .data(root.descendants())
+          .join("g")
+          .attr("transform", (d) => `translate(${d.y},${d.x})`);
 
-          // a direct link will have params
-         
-          if (node && this.urlParams.doit &&  this.urlParams.doit) {
-            this.moveToItem({
-              node,
-              target: this.urlParams.value,
-              type: this.urlParams.type,
-            });
-            // params are just a once off, so mark as done
-            this.setUrlParamsDone();
-          }
-        });
+        // a direct link will have params
 
-        await delayAnimation(0, () => {
-          node
-            .append("circle")
-            .attr("fill", (d) => {
-              return d.children || d.data.childrenCount
-                ? this.colors.dotChildren
-                : this.colors.dotNoChildren;
-            })
-            .attr("r", 2);
-        });
+        if (node && this.urlParams.doit && this.urlParams.doit) {
+          this.moveToItem({
+            node,
+            target: this.urlParams.value,
+            type: this.urlParams.type,
+          });
+          // params are just a once off, so mark as done
+          this.setUrlParamsDone();
+        }
+        //});
+
+        //await delayAnimation(0, () => {
+        node
+          .append("circle")
+          .attr("fill", (d) => {
+            return d.children || d.data.childrenCount
+              ? this.colors.dotChildren
+              : this.colors.dotNoChildren;
+          })
+          .attr("r", 2);
+        //});
 
         // the purpose of these delays is to get some of the dom updated at least
         // as the whole thing looks like it's not doing anything
 
+        //await delayAnimation(0, () => {
+        node.selectAll("text").remove();
+
+        //});
+
         await delayAnimation(0, () => {
-          node.selectAll("text").remove();
           node
             .append("text")
+            .style("fill", this.colors.vizText)
+            .attr("dy", "0.31em")
+            .attr("x", (d) => (d.children ? -6 : 6))
+            .attr("text-anchor", (d) => (d.children ? "end" : "start"))
+            .text((d) => d.data.name);
+
+          node
+            .selectAll("text")
+            .clone(true)
+            .lower()
+            .attr("stroke", "white")
             .on("mouseover", function(e, n) {
               self.handleMouseOver(this, e, n);
             })
@@ -392,31 +405,17 @@ export default {
             })
             .on("click", function(e, n) {
               self.handleMouseClick(this, e, n);
-            })
-            .style("fill", this.colors.vizText)
-            .attr("dy", "0.31em")
-            .attr("x", (d) => (d.children ? -6 : 6))
-            .attr("text-anchor", (d) => (d.children ? "end" : "start"))
-            .text((d) => d.data.name);
-        });
-
-        await delayAnimation(0, () => {
-          node
-            .selectAll("text")
-            .clone(true)
-            .lower()
-            .attr("stroke", "white");
+            });
           // signal it's all over
           this.setMaking(false);
+          d3.select("#node-info")
+            .style("left", "0px")
+            .style("top", "0px")
+            .style("min-width", "160px");
         });
       } else {
         this.setInfoData(null);
       }
-
-      d3.select("#node-info")
-        .style("left", "0px")
-        .style("top", "0px")
-        .style("min-width", "160px");
     },
     makeSvg() {
       const sel = d3.select("#tidy-tree");
