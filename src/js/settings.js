@@ -31,7 +31,7 @@ const queryDefinition = {
     "size:>550",
   ],
   gistId: "9daba5fb20a97d020431fe4a114011c7",
-  schemaVersion: '1.2',
+  schemaVersion: '1.3',
   tokenSchemaVersion: '1.1',
   ttl: 1000 * 60 * 60 * 2,
   get gistApi() {

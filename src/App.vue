@@ -33,13 +33,14 @@
         :tip="filterTip"
         unmouse
       />
-      <icons
-        :name="detailIcon"
-        @clicked="flipShowDetail"
-        :tip="detailTip"
-        unmouse
-      />
 
+
+      <deeper
+        :deeper="canDeeper"
+        :shallower="canShallower"
+        @shallower="goShallower"
+        @deeper="goDeeper"
+      />
 
       <span class="ml-2">
         <login-chip />
@@ -66,7 +67,6 @@
       </v-list>
 
       <v-card-title>
-        <icons name="small-tree" />
         <span class="ml-2">Filters</span>
         <v-spacer></v-spacer>
         <v-card-actions>
@@ -81,7 +81,6 @@
       </v-card-text>
 
       <v-card-title>
-        <icons @clicked="flipShowDetail" name="big-tree" />
         <span class="ml-2">Manifest filters</span>
         <v-spacer></v-spacer>
         <v-card-actions>
@@ -112,7 +111,8 @@
 </template>
 
 <script>
-import errorplace from "@/components/errorplace"
+import deeper from "@/components/deeper";
+import errorplace from "@/components/errorplace";
 import statscard from "@/components/statscard";
 import d3chart from "@/components/d3chart";
 import ownerfilter from "@/components/ownerfilter";
@@ -128,7 +128,6 @@ import datastudiofilter from "@/components/datastudiofilter";
 import icons from "@/components/icons";
 import loginchip from "@/components/loginchip";
 import maps from "@/js/storemaps";
-
 
 export default {
   components: {
@@ -147,6 +146,7 @@ export default {
     "stats-card": statscard,
     "login-chip": loginchip,
     icons,
+    deeper,
   },
 
   computed: {
@@ -186,12 +186,7 @@ export default {
     filterIcon() {
       return this.filterPlus ? "filter-off" : "filter-on";
     },
-    detailIcon() {
-      return this.showDetail ? "small-tree" : "big-tree";
-    },
-    detailTip() {
-      return this.showDetail ? "hide manifest detail" : "show manifest detail";
-    },
+
 
     cacheAge() {
       return this.cacheTimestamp
@@ -215,14 +210,14 @@ export default {
     },
     refresh() {
       // force a fetch ie. no local cache
-      this.vizzyInit(true)
+      this.vizzyInit(true);
     },
     ...maps.actions,
     ...maps.mutations,
   },
   data: () => ({
     sidebarMenu: false,
-    showStats: false
+    showStats: false,
   }),
 };
 </script>

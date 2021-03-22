@@ -7,7 +7,7 @@
     <div id="tidy-tree" style="width:100%;" v-resize="resize"></div>
 
     <div ref="node-info" style="position:absolute" v-if="infoVisible">
-      <v-card :color="colors.info" dark>
+      <v-card :color="colors.info" dark rounded elevation="10">
         <v-toolbar color="secondary">
           <repo-chip :repoName="repoName" :ownerPic="ownerPic" />
           <v-spacer v-if="repoName"></v-spacer>
@@ -20,6 +20,12 @@
             :iconType="iconType"
           />
           <v-spacer></v-spacer>
+          <deeper
+            :deeper="canDeeper"
+            :shallower="canShallower"
+            @shallower="goShallower"
+            @deeper="goDeeper"
+          />
           <icons
             v-if="pinned"
             name="unpin"
@@ -114,7 +120,7 @@
 
 <script>
 import maps from "@/js/storemaps";
-
+import deeper from "@/components/deeper";
 import ownercard from "@/components/ownercard";
 import repocard from "@/components/repocard";
 import filecard from "@/components/filecard";
@@ -152,6 +158,7 @@ export default {
     "time-zone-card": timezonecard,
     "webapp-card": webappcard,
     "add-on-card": addoncard,
+    deeper,
     icons,
   },
   name: "d3chart",
@@ -386,6 +393,15 @@ export default {
         await delayAnimation(0, () => {
           node
             .append("text")
+            .on("mouseover", function(e, n) {
+              self.handleMouseOver(this, e, n);
+            })
+            .on("mouseout", function(e, n) {
+              self.handleMouseOut(this, e, n);
+            })
+            .on("click", function(e, n) {
+              self.handleMouseClick(this, e, n);
+            })
             .style("fill", this.colors.vizText)
             .attr("dy", "0.31em")
             .attr("x", (d) => (d.children ? -6 : 6))
@@ -396,16 +412,8 @@ export default {
             .selectAll("text")
             .clone(true)
             .lower()
-            .attr("stroke", "white")
-            .on("mouseover", function(e, n) {
-              self.handleMouseOver(this, e, n);
-            })
-            .on("mouseout", function(e, n) {
-              self.handleMouseOut(this, e, n);
-            })
-            .on("click", function(e, n) {
-              self.handleMouseClick(this, e, n);
-            });
+            .attr("stroke", "white");
+
           // signal it's all over
           this.setMaking(false);
           d3.select("#node-info")
@@ -422,6 +430,7 @@ export default {
       this.svg = sel.append("svg");
     },
     ...maps.mutations,
+    ...maps.actions,
   },
   computed: {
     infoVisible() {
@@ -559,6 +568,7 @@ export default {
       return null;
     },
     ...maps.state,
+    ...maps.getters,
   },
 
   data: () => ({

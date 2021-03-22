@@ -1,6 +1,11 @@
 const d3 = require("d3");
 import { reduceManifests } from "./filtering";
-
+export const depths = {
+  OWNER: 0,
+  REPO: 1,
+  FILE: 2,
+  DETAIL: 3
+}
 const sorter = (items) =>
   items.sort((a, b) => {
     const aName = a.fields.name;
@@ -137,7 +142,7 @@ export const arrangeTreeData = (state) => {
 export const makeOwnerTreeData = (state) => {
   // the objective is to make tree shaped data for d3
   // { name: owner, children: [{ name: repo: children: [{ name: libraries }, { name: advanced services }] }] }
-  const { gd, dob, fob, showDetail, vTypes } = state;
+  const { gd, dob, fob, vTypes } = state;
 
   if (!gd || !state.mf) return null;
 
@@ -160,15 +165,16 @@ export const makeOwnerTreeData = (state) => {
 
   const repos = fob.repos.allFiltered();
   const files = fob.files.allFiltered();
-
+ 
   // this is the kind of tree needed by d3
   const getOwnerAndChildren = ({ ownerOb }) => {
     const id = dob.owners.accessor(ownerOb);
+   
     const children = repos
       .filter((s) => dob.reposByOwner.accessor(s) === id)
       .map((repoOb) => {
         const id = dob.repos.accessor(repoOb);
-        const children = files
+        const children = state.depth < depths.FILE ? [] : files
           .filter((s) => dob.filesByRepo.accessor(s) === id)
           .map((fileOb) => {
             const id = dob.files.accessor(fileOb);
@@ -185,7 +191,7 @@ export const makeOwnerTreeData = (state) => {
               file: fileOb,
               // the children are each of the manifest options
               // but we dont need them if only  the abbreviated map is being shown
-              children: showDetail
+              children: state.depth > depths.FILE 
                 ? makeManifestChildren({
                     mf,
                     id: fileOb.fields.sha,

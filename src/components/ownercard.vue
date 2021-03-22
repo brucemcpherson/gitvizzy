@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-list :color="listColor" dense>
+    <v-list :color="listColor" dense max-width="600px">
       <v-list-item>
         <v-list-item-avatar>
           <img :src="fields.avatar_url" />

@@ -33,6 +33,11 @@ Filtered view of manifest contents
 
 https://ramblings.mcpher.com/vizzy-scrviz/vizzy-clone-apps-script-github/
 
+## scrviz now support tags and rows to enrich your profile and your repos info.
+
+For more info see
+https://github.com/brucemcpherson/scrviz-profile
+
 ## icons available for scrvizprofile
 
 Any icon from material design icons site can be added to your scrviz-profile.json. These must be specified in full (including the 'mdi-')

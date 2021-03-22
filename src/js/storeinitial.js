@@ -9,11 +9,12 @@ import {
   getPickerKey,
   getProjectId,
   gapiCheckScopes,
-  gapiAdditionalScopes
+  gapiAdditionalScopes,
 } from "./auth";
 import { applyFilters } from "./filtering";
-import { tree, arrangeTreeData } from "./d3prep";
+import { tree, arrangeTreeData, depths } from "./d3prep";
 import { setTokenData, getTokenData } from "./forager";
+
 
 const vTypes = [
   {
@@ -99,7 +100,6 @@ const _initial = {
     root: null,
     cacheTimestamp: null,
     making: false,
-    showDetail: false,
     infoData: null,
     infoMoused: false,
     vizInfo: true,
@@ -115,27 +115,32 @@ const _initial = {
       dotNoChildren: "pink",
       vizTextHovered: "#C2185B",
       vizText: "#212121",
-      gettingData: 'red',
-      making: 'orange',
-      tagChip: 'pink accent-4'
+      gettingData: "red",
+      making: "orange",
+      tagChip: "teal accent-4",
     },
     vTypes,
+    depth: depths.REPO,
   },
   mutations: {
-    setGettingData(state, value) { 
-      state.gettingData = value
+    incrementDepth(state, value) {
+      state.depth += value;
+     
     },
-    setUrlParams(state, value) { 
-      state.urlParams = value
+    setGettingData(state, value) {
+      state.gettingData = value;
     },
-    setUrlParamsDone(state) { 
+    setUrlParams(state, value) {
+      state.urlParams = value;
+    },
+    setUrlParamsDone(state) {
       state.urlParams = {
         ...state.urlParams,
-        doit: false
-      }
+        doit: false,
+      };
     },
     setResetsvg(state, value) {
-      state.resetSvg = value
+      state.resetSvg = value;
     },
     setShowError(state, value) {
       state.showError = !!value;
@@ -250,9 +255,6 @@ const _initial = {
     _runtimeVersionFilter(state, value) {
       state.runtimeVersionFilter = value;
     },
-    _showDetail(state, value) {
-      state.showDetail = value;
-    },
     _filterPlus(state, value) {
       state.filterPls = value;
     },
@@ -261,8 +263,18 @@ const _initial = {
     },
   },
   getters: {
-    dataColor(state) { 
-      return state.gettingData ? state.colors.gettingData : (state.making ? state.colors.making : 'accent')
+    canDeeper(state) {
+      return state.depth <= depths.FILE;
+    },
+    canShallower(state) {
+      return state.depth > depths.REPO;
+    },
+    dataColor(state) {
+      return state.gettingData
+        ? state.colors.gettingData
+        : state.making
+        ? state.colors.making
+        : "accent";
     },
     checkScopes(state, getters) {
       return gapiCheckScopes(getters.isLoggedIn && state.user);
@@ -295,6 +307,14 @@ const _initial = {
     },
   },
   actions: {
+    goDeeper({ commit, dispatch }) {
+      commit("incrementDepth", 1);
+      dispatch("updateRoot");
+    },
+    goShallower({ commit, dispatch }) {
+      commit("incrementDepth", -1);
+      dispatch("updateRoot");
+    },
     signout({ commit }) {
       return signout(commit);
     },
@@ -318,9 +338,9 @@ const _initial = {
     },
     vizzyInit({ commit, dispatch }, force) {
       commit("setMaking", true);
-      commit("setGettingData", true)
+      commit("setGettingData", true);
       return gasVizzyInit(force).then(({ gd, mf, timestamp, dob, fob }) => {
-        commit("setGettingData", false)
+        commit("setGettingData", false);
         commit("setGd", gd);
         commit("setMf", mf);
         commit("setCacheTimestamp", timestamp);
@@ -434,14 +454,6 @@ const _initial = {
       dispatch("updateRoot");
     },
 
-    flipShowDetail({ state, dispatch, commit }) {
-      commit("_showDetail", !state.showDetail);
-      logEvent("filter", {
-        name: "showDetail",
-        value: state.showDetail,
-      });
-      dispatch("updateRoot");
-    },
     flipFilterPlus({ dispatch, state, commit }) {
       commit("_filterPlus", !state.filterPlus);
       logEvent("filter", {
@@ -457,8 +469,8 @@ const _initial = {
         value: state.vizInfo,
       });
     },
-    moreScopes({ state }) { 
-      gapiAdditionalScopes(state.user)
+    moreScopes({ state }) {
+      gapiAdditionalScopes(state.user);
     },
     gapi({ commit }) {
       gapi.load("picker:auth2:client", () => {
