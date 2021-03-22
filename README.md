@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css">
+
 
 
 There are so many Apps Script projects out there where the source code is published on Github, but it’s hard to find what you want. Whether it’s a library, an example of an add-on, how to use an advanced service, or just see who is working on what. I fugured it would be nice if we had a searchable visualization of everything that’s public.
@@ -61,56 +61,56 @@ rows: [
 
 | name                                                          | represents   |
 | ------------------------------------------------------------- | ------------ |
-| <span class="mdi mdi-code-json" style="color:blue;" style="color:tomato;"></span>                  | json         |
-| <span class="mdi mdi-tag-multiple" style="color:tomato;"></span>                    | tags         |
-| <span class="mdi mdi-microsoft-excel" style="color:tomato;"></span>                 | excel        |
-| <span class="mdi mdi-microsoft-word" style="color:tomato;"></span>                  | word         |
-| <span class="mdi mdi-microsoft-office" style="color:tomato;"></span>                | office       |
-| <span class="mdi mdi-microsoft-windows" style="color:tomato;"></span>               | windows      |
-| <span class="mdi mdi-youtube" style="color:tomato;"></span>                         | youtube      |
-| <span class="mdi mdi-linkedin" style="color:tomato;"></span>                        | linkedin     |
-| <span class="mdi mdi-information" style="color:tomato;"></span>                     | info         |
-| <span class="mdi mdi-filter-off" style="color:tomato;"></span>                      | filter-off   |
-| <span class="mdi mdi-filter" style="color:tomato;"></span>                          | filter-on    |
-| <span class="mdi mdi-open-in-new" style="color:tomato;"></span>                     | open         |
-| <span class="mdi mdi-office-building" style="color:tomato;"></span>                 | company      |
-| <span class="mdi mdi-microsoft-word" style="color:tomato;"></span>                  | word         |
-| <span class="mdi mdi-microsoft-office" style="color:tomato;"></span>                | office       |
-| <span class="mdi mdi-microsoft-windows" style="color:tomato;"></span>               | windows      |
-| <span class="mdi mdi-youtube" style="color:tomato;"></span>                         | youtube      |
-| <span class="mdi mdi-linkedin" style="color:tomato;"></span>                        | linkedin     |
-| <span class="mdi mdi-information" style="color:tomato;"></span>                     | info         |
-| <span class="mdi mdi-map-marker" style="color:tomato;"></span>                      | location     |
-| <span class="mdi mdi-email" style="color:tomato;"></span>                           | email        |
-| <span class="mdi mdi-briefcase" style="color:tomato;"></span>                       | files        |
-| <span class="mdi mdi-file" style="color:tomato;"></span>                            | file         |
-| <span class="mdi mdi-github" style="color:tomato;"></span>                          | github       |
-| <span class="mdi mdi-package-variant" style="color:tomato;"></span>                 | clasp        |
-| <span class="mdi mdi-table-eye" style="color:tomato;"></span>                       | stats        |
-| <span class="mdi mdi-web" style="color:tomato;"></span>                             | webapp       |
-| <span class="mdi mdi-account-key" style="color:tomato;"></span>                     | access       |
-| <span class="mdi mdi-comment" style="color:tomato;"></span>                         | viz-info     |
-| <span class="mdi mdi-folder" style="color:tomato;"></span>                          | repos        |
-| <span class="mdi mdi-database" style="color:tomato;"></span>                        | libraries    |
-| <span class="mdi mdi-twitter" style="color:tomato;"></span>                         | twitter      |
-| <span class="mdi mdi-google-maps" style="color:tomato;"></span>                     | maps         |
-| <span class="mdi mdi-bio" style="color:tomato;"></span>                             | bio          |
-| <span class="mdi mdi-cash-multiple" style="color:tomato;"></span>                   | fees         |
-| <span class="mdi mdi-lifebuoy" style="color:tomato;"></span>                        | support      |
-| <span class="mdi mdi-text" style="color:tomato;"></span>                            | text         |
-| <span class="mdi mdi-cash-multiple" style="color:tomato;"></span>                   | fees         |
-| <span class="mdi mdi-currency-usd" style="color:tomato;"></span>                    | hireable     |
-| <span class="mdi mdi-currency-usd-off" style="color:tomato;"></span>                | hireable-off |
-| <span class="mdi mdi-text" style="color:tomato;"></span>                            | text         |
-| <span class="mdi mdi-account-group" style="color:tomato;"></span>                   | followers    |
-| <span class="mdi mdi-counter" style="color:tomato;"></span>                         | version      |
-| <span class="mdi mdi-feather" style="color:tomato;"></span>                         | symbol       |
-| <span class="mdi mdi-blogger" style="color:tomato;"></span>                         | blog         |
-| <span class="mdi mdi-identifier" style="color:tomato;"></span>                      | id           |
-| <span class="mdi mdi-lock-plus" style="color:tomato;"></span>                       | auth         |
-| <span class="mdi mdi-language-html5" style="color:tomato;"></span>                  | html         |
-| <span class="mdi mdi-semantic-web" style="color:tomato;"></span>                    | scrviz       |
-| <span class="mdi mdi-phone" style="color:tomato;"></span>                           | phone        |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/code-json.svg" height="24" />                  | json         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/tag-multiple.svg" height="24" />                    | tags         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/microsoft-excel.svg" height="24" />                 | excel        |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/microsoft-word.svg" height="24" />                  | word         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/microsoft-office.svg" height="24" />                | office       |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/microsoft-windows.svg" height="24" />               | windows      |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/youtube.svg" height="24" />                         | youtube      |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/linkedin.svg" height="24" />                        | linkedin     |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/information.svg" height="24" />                     | info         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/filter-off.svg" height="24" />                      | filter-off   |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/filter.svg" height="24" />                          | filter-on    |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/open-in-new.svg" height="24" />                     | open         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/office-building.svg" height="24" />                 | company      |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/microsoft-word.svg" height="24" />                  | word         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/microsoft-office.svg" height="24" />                | office       |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/microsoft-windows.svg" height="24" />               | windows      |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/youtube.svg" height="24" />                         | youtube      |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/linkedin.svg" height="24" />                        | linkedin     |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/information.svg" height="24" />                     | info         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/map-marker.svg" height="24" />                      | location     |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/email.svg" height="24" />                           | email        |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/briefcase.svg" height="24" />                       | files        |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/file.svg" height="24" />                            | file         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/github.svg" height="24" />                          | github       |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/package-variant.svg" height="24" />                 | clasp        |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/table-eye.svg" height="24" />                       | stats        |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/web.svg" height="24" />                             | webapp       |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/account-key.svg" height="24" />                     | access       |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/comment.svg" height="24" />                         | viz-info     |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/folder.svg" height="24" />                          | repos        |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/database.svg" height="24" />                        | libraries    |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/twitter.svg" height="24" />                         | twitter      |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/google-maps.svg" height="24" />                     | maps         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/bio.svg" height="24" />                             | bio          |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/cash-multiple.svg" height="24" />                   | fees         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/lifebuoy.svg" height="24" />                        | support      |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/text.svg" height="24" />                            | text         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/cash-multiple.svg" height="24" />                   | fees         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/currency-usd.svg" height="24" />                    | hireable     |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/currency-usd-off.svg" height="24" />                | hireable-off |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/text.svg" height="24" />                            | text         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/account-group.svg" height="24" />                   | followers    |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/counter.svg" height="24" />                         | version      |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/feather.svg" height="24" />                         | symbol       |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/blogger.svg" height="24" />                         | blog         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/identifier.svg" height="24" />                      | id           |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/lock-plus.svg" height="24" />                       | auth         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/language-html5.svg" height="24" />                  | html         |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/semantic-web.svg" height="24" />                    | scrviz       |
+| <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/phone.svg" height="24" />                           | phone        |
 | <img src="./src/assets/appsscript.png" height="20"/>          | appsscript   |
 | <img src="./src/assets/GoogleDrive_2020.png" height="20"/>    | drive        |
 | <img src="./src/assets/Sheets_2020.png" height="20"/>         | sheets       |
