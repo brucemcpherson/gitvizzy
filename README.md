@@ -59,7 +59,7 @@ rows: [
 ]
 ```
 
-| name                                                          | represents   |
+| icon                                                          | built in name   |
 | ------------------------------------------------------------- | ------------ |
 | <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/code-json.svg" height="24" />                  | json         |
 | <img src="https://cdn.jsdelivr.net/npm/@mdi/svg@5.9.55/svg/tag-multiple.svg" height="24" />                    | tags         |
