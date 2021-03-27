@@ -125,7 +125,9 @@ const _initial = {
   mutations: {
     incrementDepth(state, value) {
       state.depth += value;
-     
+    },
+    setDepth(state, value) {
+      state.depth = value;
     },
     setGettingData(state, value) {
       state.gettingData = value;
@@ -310,7 +312,9 @@ const _initial = {
     goDeeper({ commit, dispatch }) {
       commit("incrementDepth", 1);
       dispatch("updateRoot");
+    
     },
+
     goShallower({ commit, dispatch }) {
       commit("incrementDepth", -1);
       dispatch("updateRoot");
@@ -483,6 +487,13 @@ const _initial = {
           console.log("failed to gapiinit", error);
         });
       });
+    },
+    fixParamsLevel({ commit, state }, vp) {
+      // its possible we're not at a deep enough level for the param being sought
+      if (vp && vp.type === "manifest" && state.depth < depths.FILE) {
+        commit("setDepth", depths.FILE)
+      } 
+      commit("setUrlParams", vp);
     },
 
     updateRoot({ commit, state }, force) {

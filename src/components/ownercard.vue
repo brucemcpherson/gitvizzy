@@ -7,7 +7,7 @@
         </v-list-item-avatar>
         <v-list-item-content>
           <v-list-item-title>{{ fields.login }}</v-list-item-title>
-          <v-list-item-subtitle style="max-width:100px;">{{
+          <v-list-item-subtitle>{{
             fields.name
           }}</v-list-item-subtitle>
         </v-list-item-content>

@@ -27,6 +27,7 @@ export const dealWithParams = (store) => {
       message: vp.keys && vp.keys.join(","),
     });
   } else {
+    store.dispatch("fixParamsLevel", vp);
     store.commit("setUrlParams", vp);
   }
 };

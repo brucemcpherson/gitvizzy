@@ -360,7 +360,7 @@ export default {
 
         // a direct link will have params
 
-        if (node && this.urlParams.doit && this.urlParams.doit) {
+        if (node && this.urlParams && this.urlParams.doit) {
           this.moveToItem({
             node,
             target: this.urlParams.value,
