@@ -394,7 +394,7 @@ export default {
           node
             .append("text")
             .on("mouseover", function(e, n) {
-              self.handleMouseOver(this, e, n);
+              if(self.hover)self.handleMouseOver(this, e, n);
             })
             .on("mouseout", function(e, n) {
               self.handleMouseOut(this, e, n);

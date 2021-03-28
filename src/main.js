@@ -43,6 +43,9 @@ new Vue({
 }).$mount("#app");
 
 // when tab comes in view, its possible a new render is needed
+// this seems to be taking care of itself without the need for this
+// except for occassionally from developer tools interactions
+// so let's leave this out for now
 /*
 tabVisibility
   .onVisible(() => store.dispatch("updateRoot", true))

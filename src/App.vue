@@ -27,6 +27,12 @@
         :tip="vizInfoTip"
         unmouse
       />
+        <icons
+        :name="hover ? 'hover-off' : 'hover'"
+        @clicked="flipHover"
+        :tip="`Show info card on  ${!hover ? 'hover' : 'click only'}`"
+        unmouse
+      />
       <icons
         :name="filterIcon"
         @clicked="flipFilterPlus"
@@ -175,7 +181,7 @@ export default {
       },
     },
     vizInfoTip() {
-      return this.vizInfo ? "disable viz tips" : "enable viz tips";
+      return this.vizInfo ? "disable all info cards" : "enable info cards";
     },
     vizInfoIcon() {
       return this.vizInfo ? "viz-info-off" : "viz-info";

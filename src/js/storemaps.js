@@ -1,3 +1,4 @@
+// a quick wap of mapping all known mutaions, state, mappers and actions
 import storeIntial from "./storeinitial";
 import Vuex from 'vuex';
 

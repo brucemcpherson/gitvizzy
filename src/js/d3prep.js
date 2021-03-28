@@ -313,7 +313,7 @@ export const makeManifestTreeData = (state) => {
               item: g,
             });
           }
-          // just pile it all on - we'll need all this to sort it out late
+          // just pile it all on - we'll need all this to sort it out later
           p.get(id).items.push({
             variant: g,
             viewItem,
@@ -325,7 +325,7 @@ export const makeManifestTreeData = (state) => {
     }, new Map());
 
   // now we have the whole thing arranged by viewtype
-  // need to create a tree based on that and dispose of irrelevant thing
+  // need to create a tree based on that and dispose of irrelevant things
   const viewFiles = Array.from(t.values()).map((value) => {
     // borrow the code for making a child from the regular owner shaped tree
     // it'll only return 1 child
@@ -335,19 +335,19 @@ export const makeManifestTreeData = (state) => {
       skipVersions: true,
     }).children;
     if (cl.length !== 1) {
-      throw new Error("should hav returned a child for ", value.item);
+      throw new Error("should have returned a single child for ", value.item);
     }
     const cld = cl[0];
 
     return {
       name: cld.name,
-      // TODO the versions need to be updated using the variants and the names too
+      // TODO maybe the versions should be updated using the variants and the names too
       entry: cld.entry,
       list: cld.list,
       manifestType: cld.manifestType,
       type: cld.type,
       children: value.items.reduce((p, f) => {
-        // all the files that match this sha
+        // find all the files that match this sha
 
         const sha = f.viewItem.id;
         const pc = p.concat(
@@ -402,6 +402,8 @@ export const makeManifestTreeData = (state) => {
     type: "root",
   };
 };
+
+// this will mash it into the shape needed for a d3 tree structure
 export const tree = ({ data, width }) => {
   if (!data || !width) return null;
 
@@ -410,6 +412,8 @@ export const tree = ({ data, width }) => {
   root.dy = width / (root.height + 1);
   return d3.tree().nodeSize([root.dx, root.dy])(root);
 };
+
+// this is for a summary list of the versions discovered
 export const mapVersions = (ot) => {
   return (ot || []).map((f) => ({
     library: f,
@@ -420,6 +424,8 @@ export const mapVersions = (ot) => {
       .join(",") || f.label}`,
   }));
 };
+
+// TODO : might be nice to provide  stats card one day
 export const getStats = () => {
   // generate a bunch of stats
   return {};

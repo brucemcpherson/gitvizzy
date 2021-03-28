@@ -1,3 +1,6 @@
+// using cross filter to manage the interlocked selectable filters
+// this is all a bit more verbose than I'd hoped when I started out.
+
 import cf from "crossfilter2";
 import { enumerateManifests } from "./gasser";
 

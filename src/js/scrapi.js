@@ -1,5 +1,5 @@
 /* global gapi */
-
+// this is all about creating an apps script project
 export const createProject = ({ title, contents, parentId }) => {
   const pack = {
     title,

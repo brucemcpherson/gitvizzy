@@ -1,4 +1,6 @@
 /*global gapi*/
+// this is the vuex definition
+// pretty much everything that happens anywhere comes through here
 import { gasVizzyInit, delay } from "./gasvizzy";
 import {
   logEvent,
@@ -14,7 +16,6 @@ import {
 import { applyFilters } from "./filtering";
 import { tree, arrangeTreeData, depths } from "./d3prep";
 import { setTokenData, getTokenData } from "./forager";
-
 
 const vTypes = [
   {
@@ -100,6 +101,7 @@ const _initial = {
     root: null,
     cacheTimestamp: null,
     making: false,
+    hover: true,
     infoData: null,
     infoMoused: false,
     vizInfo: true,
@@ -169,6 +171,10 @@ const _initial = {
     },
     flipPullDialog(state) {
       state.showPullDialog = !state.showPullDialog;
+    },
+    flipHover(state) {
+      state.hover = !state.hover;
+      state.infoMoused = state.hover;
     },
     setPullDialog(state, value) {
       state.showPullDialog = value;
@@ -312,7 +318,6 @@ const _initial = {
     goDeeper({ commit, dispatch }) {
       commit("incrementDepth", 1);
       dispatch("updateRoot");
-    
     },
 
     goShallower({ commit, dispatch }) {
@@ -491,8 +496,8 @@ const _initial = {
     fixParamsLevel({ commit, state }, vp) {
       // its possible we're not at a deep enough level for the param being sought
       if (vp && vp.type === "manifest" && state.depth < depths.FILE) {
-        commit("setDepth", depths.FILE)
-      } 
+        commit("setDepth", depths.FILE);
+      }
       commit("setUrlParams", vp);
     },
 

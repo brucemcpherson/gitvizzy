@@ -1,4 +1,5 @@
 // this is all about using local storage
+// a copy of the latest data from gist cache is held locally and refreshed from time to time
 import localForage from "localforage";
 import { queryDefinition } from "./settings";
 const tokenKey = "tokes";

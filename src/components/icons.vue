@@ -45,6 +45,18 @@
         >
         <v-icon
           :disabled="disabled"
+          v-else-if="name === 'hover'"
+          @click="emit()"
+          >mdi-beaker-plus</v-icon
+        >
+        <v-icon
+          :disabled="disabled"
+          v-else-if="name === 'hover-off'"
+          @click="emit()"
+          >mdi-beaker-minus</v-icon
+        >
+        <v-icon
+          :disabled="disabled"
           v-else-if="name === 'youtube'"
           @click="emit()"
           >mdi-youtube</v-icon
